@@ -1080,14 +1080,15 @@ var BM = (function () {
     var B = A.beta || { pts: [] };
     // Tabell per kjøring
     var tb = $("bTable");
-    var h = '<thead><tr><th>Run</th><th>Use in fit</th><th>HUMS pred. IPS</th><th>HUMS pred. °</th></tr></thead><tbody>';
+    var h = '<thead><tr><th>Use</th><th>Run</th><th>HUMS pred. IPS</th><th>HUMS pred. °</th></tr></thead><tbody>';
     S.runs.forEach(function (r, i) {
       var p = B.byI[i], ex = p && !p.use, note = "";
       if (p && p.avgWarn) note = '<span class="avg">The reading looks like an average – actual level may be approx. ' + fmt(p.Tm.ips, 2) + ' ips</span>';
       else if (p && !p.use) note = "Not used in fit";
       if (p && B.last && p.i === B.last.i && B.humsDist !== undefined) note += (note ? "<br>" : "") + "HUMS and Next are " + fmt(B.humsDist, 2) + " IPS apart";
-      h += '<tr class="' + (ex ? "excl" : "") + '" data-i="' + i + '"><th class="run" scope="row">' + (i + 1) + '</th>' +
+      h += '<tr class="' + (ex ? "excl" : "") + '" data-i="' + i + '">' +
         '<td><button type="button" class="tog' + (useOf(r) ? ' on' : '') + '" data-act="use">' + (useOf(r) ? '✓' : '–') + '</button></td>' +
+        '<th class="run" scope="row">' + (i + 1) + '</th>' +
         '<td><button type="button" class="cell num' + (r.hp ? '' : ' empty') + '" data-act="hp">' + (r.hp || '–') + '</button></td>' +
         '<td><button type="button" class="cell num' + (r.hd ? '' : ' empty') + '" data-act="hd">' + (r.hd || '–') + '</button></td>' +
         '</tr>';

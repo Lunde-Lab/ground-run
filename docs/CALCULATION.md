@@ -29,7 +29,7 @@ Indexing or re-installing the shaft changes `B`. `α` depends mainly on engine s
 
 ## 3. Fit within a job (runs ≥ 2)
 
-Complex least squares over the runs marked **Use in fit** gives `B` and `α`. Leave-one-out RMS is computed as a quality figure.
+Complex least squares over the runs marked **Use** gives `B` and `α`. Leave-one-out RMS is computed as a quality figure.
 
 - Needs at least two used runs with different `W`.
 - α mode (only when HUMS predictions are entered): *Own data* (default), *Blended* `(n·α + 2·α_HUMS)/(n + 2)`, *HUMS*. `α_HUMS` = mean of `(P − V)/(W_new − W)` per run with a HUMS prediction `P`.

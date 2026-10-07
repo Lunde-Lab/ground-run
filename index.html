@@ -809,6 +809,9 @@ var BM = (function () {
       // Kjøring 1-forslag: α fra én tidligere jobb per motor (Engine 1: 3 kjøringer okt. 2026, Engine 2: 4 rene kjøringer). Svært usikkert
       var pr = PRIOR[ENG]; alpha = BM.rot([pr.mag, 0], pr.ang); res.prior = pr;
       res.alphaSrc = "prior";
+      // HUMS-prediksjon på kjøring 1 + kalibrering fra tidligere jobber (kun når analyze.py har vist at det slår prior)
+      var hc = pr.hums, hlast = hl.filter(function (h) { return h.p === res.last && h.a; })[0];
+      if (hc && hc.use && hlast) { alpha = BM.mul(BM.rot([hc.cMag, 0], hc.cAng), hlast.a); res.priorHums = true; }
       var dW0 = BM.sub(res.Wny, res.last.W);
       res.approx = { aA: alpha, dW: dW0, V: res.last.V, userSet: BM.abs(dW0) > 1e-9 };
     }
@@ -1101,7 +1104,7 @@ var BM = (function () {
       for (var ph = -pz.dAng; ph <= pz.dAng + 1e-9; ph += pz.dAng / 3) [1 - pz.dMag, 1, 1 + pz.dMag].forEach(function (rr) { var z = BM.abs(BM.add(B.last.V, BM.mul(BM.rot([rr, 0], ph), BM.mul(B.alpha, dW)))); lo = Math.min(lo, z); hi = Math.max(hi, z); });
       return [lo, hi];
     }
-    var oh = isPrior ? '<div class="stdwarn">Run 1 suggestion – based on ' + (PRIOR[ENG].jobs === 1 ? 'one earlier job' : PRIOR[ENG].jobs + ' earlier jobs') + ' on engine ' + ENG + '. Very uncertain: confirm with run 2.</div>' : '';
+    var oh = isPrior ? '<div class="stdwarn">Run 1 suggestion – based on ' + (B.priorHums ? 'the HUMS prediction, calibrated from ' + PRIOR[ENG].hums.jobs + ' earlier jobs' : (PRIOR[ENG].jobs === 1 ? 'one earlier job' : PRIOR[ENG].jobs + ' earlier jobs')) + ' on engine ' + ENG + '. Very uncertain: confirm with run 2.</div>' : '';
     oh += '<div class="recn ' + (recOk ? 'good' : 'crit') + '"><div><span class="rl2">Recommended number of screws</span><b>' + rec.n + '</b><span class="rs">' +
       (recOk ? 'fewest screws below 0.30 · predicted ' : 'none below 0.30 · best ') + fmt(rec.score, 2) + ' IPS</span></div>' +
       '<div class="pern" role="radiogroup" aria-label="Number of screws in suggestions">' + per.map(function (x) { return '<button type="button" role="radio" aria-checked="' + (x.n === B.selN) + '" data-n="' + x.n + '" class="' + (x.n === rec.n ? 'rec' : '') + '"><span>' + x.n + (x.n === 1 ? ' screw' : ' screws') + (x.n === rec.n ? ' · rec.' : '') + '</span>' + '<strong>' + fmt(x.score, 2) + ' <small>IPS</small></strong></button>'; }).join('') + '</div></div>';

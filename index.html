@@ -301,6 +301,8 @@ table.acc { min-width: 600px; table-layout: fixed; }
 .idxbeta { font-weight: 600; padding: 12px 14px; border-radius: 12px; background: rgba(var(--crit-rgb), 0.14); border: 2px solid var(--crit); }
 @media (max-width: 560px) { .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .rh-l { display: flex; align-items: center; gap: 12px; }
+#runsT { display: flex; align-items: center; gap: 10px; }
+.eng-tag { display: inline-flex; align-items: center; min-height: 32px; padding: 4px 12px; border-radius: 8px; border: 1.5px solid var(--accent); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); font-size: .95rem; font-weight: 700; letter-spacing: .04em; text-transform: none; white-space: nowrap; }
 .beta-btn { min-height: 40px; padding: 6px 14px; border-radius: 999px; font-size: .85rem; font-weight: 700; letter-spacing: .02em; }
 .beta-btn[aria-pressed="true"] { background: var(--warn); border-color: var(--warn); color: var(--panel); }
 tr.excl > td, tr.excl > th { opacity: .45; }
@@ -468,7 +470,7 @@ table.btab { min-width: 0; table-layout: fixed; }
 
   <section class="card runs" aria-labelledby="runsT">
     <div class="runs-head">
-      <div class="rh-l"><h2 id="runsT">Runs</h2><button type="button" class="beta-btn" id="betaBtn" aria-pressed="false">Advanced (BETA)</button></div>
+      <div class="rh-l"><h2 id="runsT">Runs <span class="eng-tag" id="engTag">Engine 1</span></h2><button type="button" class="beta-btn" id="betaBtn" aria-pressed="false">Advanced (BETA)</button></div>
       <div class="btns">
         <button class="primary" id="addRun" type="button">+ Add run</button>
         <button id="delRun" type="button">Remove last</button>
@@ -1339,7 +1341,7 @@ var BM = (function () {
       (nums.length > 1 ? 'Runs ' : 'Run ') + join(nums) + ' measured ' + join(vals) + ' IPS, which is above the 4.0 IPS limit. ' +
       'Index the shaft per AMM 18-12-02 and take a new reading before fitting any weights.</div>';
   }
-  function refresh() { analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); if (BETA) drawBeta(); }
+  function refresh() { $("engTag").textContent = "Engine " + ENG; analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); if (BETA) drawBeta(); }
   // ---------- MR Ground Track & Balance ----------
   var MRKEY = "vibrasjonsdiagram-mrtb";
   var BLADES = [["Blue", "var(--b-blue)"], ["Red", "var(--b-red)"], ["Black", "var(--b-black)"], ["Yellow", "var(--b-yellow)"]];

@@ -29,6 +29,7 @@ python3 scripts/analyze.py --write    # update PRIOR in index.html + data/priors
 
 - `after` = the **complete** set of screws fitted after that run (not only the changes). Format `"<position> <Al|Ti|St>"`.
 - `start` = screws fitted before run 1 (usually empty).
+- `"hums": [ips, deg]` (optional) = HUMS-predicted reading for the **next** run with the `after` screws. The app export carries this automatically (HUMS pred. IPS / ° columns). Note in `"note"` if the screws fitted were not the ones HUMS recommended.
 - `"use": false` on a run that should not count (not power cycled, bad reading).
 - File name: `YYYY-MM-DD_engine<1|2>.json` (add a suffix if two jobs share a date).
 

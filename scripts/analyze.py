@@ -18,6 +18,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLOCK = {12: -5.5, 1: 5.5, 2: 54, 3: 66, 4: 114, 5: 126, 6: 174.5, 7: 185.5, 8: 234, 9: 246, 10: 294, 11: 306}
 MAG = {"Al": 0.96, "Ti": 1.58, "St": 2.54}
 DEFAULT_DANG, DEFAULT_DMAG = 30.0, 0.15  # range used until there are >= 3 jobs per engine
+HUMS_MIN_JOBS = 3                         # jobs with HUMS predictions before run 1 may use calibrated HUMS
 
 
 def polar(r, deg): return cmath.rect(r, math.radians(deg))
@@ -25,6 +26,14 @@ def meas(ips, deg): return polar(ips, (40 - deg) % 360)          # reading -> ch
 def weight(setup): return sum((polar(MAG[t], CLOCK[p]) for p, t in setup), 0j)
 def fmt(z): return f"{abs(z):.2f}∠{math.degrees(cmath.phase(z)):.1f}°"
 def num(v): return float(str(v).replace(",", ".")) if str(v).strip() != "" else None
+
+
+def parse_hums(v):
+    """HUMS-predicted reading for the next run: [ips, deg] or {"ips", "deg"}."""
+    if not v: return None
+    ips, deg = (v.get("ips"), v.get("deg")) if isinstance(v, dict) else v
+    ips, deg = num(ips), num(deg)
+    return (ips, deg) if ips is not None and deg is not None else None
 
 
 def parse_setup(items):
@@ -45,7 +54,8 @@ def from_app_engine(eng, o, src):
         ips, deg = num(r.get("ips", "")), num(r.get("deg", ""))
         if ips is None or deg is None: continue
         use = r["use"] if "use" in r else r.get("cyc", True) is not False
-        runs.append({"ips": ips, "deg": deg, "after": pos_to_setup(r.get("pos")), "use": bool(use)})
+        runs.append({"ips": ips, "deg": deg, "after": pos_to_setup(r.get("pos")), "use": bool(use),
+                     "hums": parse_hums([r.get("hp", ""), r.get("hd", "")])})
     if len(runs) < 2: return None
     return {"engine": eng, "file": src, "start": pos_to_setup(o.get("start")), "runs": runs}
 
@@ -60,7 +70,7 @@ def load_jobs():
                 if j: j["date"] = d.get("date", ""); jobs.append(j)
             continue
         runs = [{"ips": num(r["ips"]), "deg": num(r["deg"]), "after": parse_setup(r.get("after", [])),
-                 "use": r.get("use", True)} for r in d["runs"]]
+                 "use": r.get("use", True), "hums": parse_hums(r.get("hums"))} for r in d["runs"]]
         jobs.append({"engine": int(d["engine"]), "file": name, "date": d.get("date", ""),
                      "start": parse_setup(d.get("start", [])), "runs": runs})
     return jobs
@@ -78,6 +88,55 @@ def steps(job):
         dW = weight(setups[k + 1]) - weight(setups[k])
         if abs(dW) > 1e-9: out.append((dV, dW, k + 1))
     return out
+
+
+def hums_steps(job):
+    """Steps where HUMS predicted run k+1 from run k: (dV, dW, u, k) with u = P - V_k (HUMS-predicted change)."""
+    rs, out = job["runs"], []
+    for dV, dW, k in steps(job):
+        h = rs[k - 1].get("hums")
+        if h: out.append((dV, dW, meas(*h) - meas(rs[k - 1]["ips"], rs[k - 1]["deg"]), k))
+    return out
+
+
+def calib(hs):
+    """Complex factor c so that c * (HUMS-predicted change) best matches the measured change."""
+    den = sum(abs(u) ** 2 for _, _, u, _ in hs)
+    return sum(u.conjugate() * dV for dV, _, u, _ in hs) / den if den else None
+
+
+def rms(xs): return math.sqrt(sum(x * x for x in xs) / len(xs)) if xs else None
+
+
+def hums_report(e, lst):
+    """Compare, step by step, HUMS / prior alpha / calibrated HUMS (both leave-one-job-out). Returns PRIOR.hums or None."""
+    hj = [(j, hums_steps(j)) for j, _ in lst]
+    hj = [(j, hs) for j, hs in hj if hs]
+    if not hj: return None
+    print(f"\n  HUMS, engine {e}: {sum(len(hs) for _, hs in hj)} prediction(s) in {len(hj)} job(s)")
+    eH, eP, eC = [], [], []
+    for j, hs in hj:
+        others = [jj for jj, _ in lst if jj is not j]
+        ao = alpha_from_steps([s for jj in others for s in steps(jj)])
+        co = calib([s for jj in others for s in hums_steps(jj)])
+        for dV, dW, u, k in hs:
+            aH = u / dW
+            line = f"   {j['file']} step {k}->{k + 1}: alpha_HUMS {fmt(aH)}  err HUMS {abs(dV - u):.2f}"
+            eH.append(abs(dV - u))
+            if ao is not None and co is not None:   # compare on the same steps only
+                eP.append(abs(dV - ao * dW)); eC.append(abs(dV - co * u))
+                line += f"  prior {eP[-1]:.2f}  cal. HUMS {eC[-1]:.2f}"
+            print(line)
+    c = calib([s for _, hs in hj for s in hs])
+    print(f"   RMS error HUMS {rms(eH):.2f} IPS ({len(eH)} steps)   calibration c = {fmt(c)}"
+          "  (c = 1∠0° means HUMS is right on average)")
+    use = False
+    if eP:
+        print(f"   LOO on {len(eP)} steps: prior alpha {rms(eP):.2f}  calibrated HUMS {rms(eC):.2f} IPS")
+        use = len(hj) >= HUMS_MIN_JOBS and rms(eC) < 0.9 * rms(eP)   # must be clearly better
+    print(f"   -> run-1 uses {'calibrated HUMS' if use else 'prior alpha'}"
+          + ("" if use else f" (calibrated HUMS needs >= {HUMS_MIN_JOBS} jobs and a >= 10 % lower LOO error)"))
+    return {"cMag": round(abs(c), 3), "cAng": round(math.degrees(cmath.phase(c)), 1), "jobs": len(hj), "use": use}
 
 
 def alpha_from_steps(st):
@@ -132,6 +191,8 @@ def main():
                 if ao is not None and st:
                     dV, dW, k = st[0]
                     print(f"   LOO {j['file']}: first step error {abs(dV - ao * dW):.2f} IPS")
+        h = hums_report(e, lst)
+        if h: prior[str(e)]["hums"] = h
 
     if write:
         json.dump(prior, open(os.path.join(ROOT, "data", "priors.json"), "w"), indent=2)

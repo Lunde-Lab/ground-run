@@ -70,12 +70,26 @@ This removes `B` (and slow drift of `B` during the job) and weights big weight c
 
 Range: until an engine has ≥ 3 jobs, `dAng = 30°`, `dMag = 15 %`. With ≥ 3 jobs: 2 × RMS of the job-to-job scatter, clamped to 15–45° and 10–30 %.
 
+### HUMS predictions in earlier jobs
+
+Each run with a HUMS prediction `P_k` gives HUMS's predicted change `u_k = P_k − V_k` for the screws actually fitted. `analyze.py` estimates a complex calibration factor
+
+```
+c = Σ conj(u)·ΔV / Σ |u|²        (c = 1∠0° → HUMS right on average)
+```
+
+and compares, leave-one-job-out on the same steps: HUMS as-is, prior α, and calibrated HUMS `V_k + c·u_k`. It writes `PRIOR[engine].hums = {cMag, cAng, jobs, use}`.
+
+`use` is true only with ≥ 3 jobs with HUMS data **and** calibrated HUMS ≥ 10 % better (RMS) than prior α. Then run 1 uses `α = c · α_HUMS` (α_HUMS from the HUMS prediction on run 1, needs the screws entered) instead of the pooled prior; the range stays `dAng`/`dMag`. This helps only if HUMS's coefficient differs per aircraft and tracks the true α; if HUMS uses the same coefficient everywhere, `c·α_HUMS` equals the prior and `use` stays false.
+
 ### Current data (Oct 2026)
 
 | Engine | Jobs | α | Note |
 |---|---|---|---|
 | 1 | 1 (3 runs) | 0.99 ∠ −171° | Matches technicians' rule "weight at the dot" (α ≈ 1 ∠ 180°) |
 | 2 | 1 (7 runs, 5–6 excluded) | 1.00 ∠ −115° | ≈ 2 clock hours counter-clockwise from the dot |
+
+No HUMS predictions in the job data yet.
 
 The −4 h "sensor offset" for engine 2 from the original spec does **not** match the data (it predicts engine 1 at ≈ +9°); `res.alphaCorr` is computed but unused.
 

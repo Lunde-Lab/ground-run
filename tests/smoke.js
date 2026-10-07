@@ -38,6 +38,19 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.reload();
   ok((await pg.$$('#bOpt .opt2:not(.back)')).length === 0 && !(await pg.isHidden('#idxAlert')), '> 4.0 IPS blocks suggestions and shows index alert');
 
+  // Run 1 with HUMS prediction + PRIOR.hums.use (set by analyze.py when calibrated HUMS beats prior) -> HUMS-based run-1 α
+  const fs = require('fs'), os = require('os');
+  const tmp = path.join(os.tmpdir(), 'gr-hums.html');
+  fs.writeFileSync(tmp, fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8')
+    .replace(/var PRIOR = \{"1": \{/, 'var PRIOR = {"1": {"hums": {"cMag": 1, "cAng": 0, "jobs": 3, "use": true}, '));
+  await pg.goto('file://' + tmp);
+  await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); o.runs[0].ips = '1,25'; o.runs[0].hp = '0,40'; o.runs[0].hd = '100'; o.runs[0].pos[1] = ['St']; localStorage.setItem(k, JSON.stringify(o)); });
+  await pg.reload();
+  ok((await txt(pg, '#bOpt')).includes('HUMS prediction, calibrated from 3 earlier jobs'), 'Run 1 uses calibrated HUMS when PRIOR.hums.use');
+  await pg.goto(URL);
+  ok((await txt(pg, '#bOpt')).includes('based on one earlier job'), 'Without PRIOR.hums, run 1 uses prior α (HUMS entered)');
+  fs.unlinkSync(tmp);
+
   // MR / TR tabs render
   await pg.click('#tab3'); ok(await pg.isVisible('#mrView'), 'MR Balance tab visible');
   await pg.click('#tab4'); ok(await pg.isVisible('#trView'), 'TR Balance tab visible');

@@ -1121,7 +1121,7 @@ var BM = (function () {
     var B = A.beta || { pts: [] };
     // Tabell per kjøring
     var tb = $("bTable");
-    var h = '<thead><tr><th>Use</th><th>Run</th><th>HUMS pred. IPS</th><th>HUMS pred deg</th><th>HUMS rec. weights</th></tr></thead><tbody>';
+    var h = '<thead><tr><th>Use</th><th>Run</th><th>HUMS pred IPS</th><th>HUMS pred deg</th><th>HUMS rec. weights</th></tr></thead><tbody>';
     S.runs.forEach(function (r, i) {
       var p = B.byI[i], ex = p && !p.use, note = "";
       if (p && p.avgWarn) note = '<span class="avg">The reading looks like an average – actual level may be approx. ' + fmt(p.Tm.ips, 2) + ' ips</span>';

@@ -603,16 +603,21 @@ var BM = (function () {
     if (det < 1e-9 * Math.max(1, n * sW2)) return null;
     return { B: divr(sub(mul([sW2, 0], sV), mul(sW, sWV)), det), alpha: divr(sub(mul([n, 0], sWV), mul(conj(sW), sV)), det) };
   }
-  function model(m, Wn) { return add(m.B, mul(m.alpha, Wn)); }
-  function loo(pts) {
-    var errs = [];
+  // α fra endringer mellom påfølgende brukte kjøringer (samme som analyze.py). Tåler at B driver i løpet av jobben,
+  // noe den globale tilpasningen over ikke gjør. B = snitt av V − αW (kun til visning).
+  function dfit(pts) {
+    var sn = [0, 0], sd = 0;
     for (var k = 1; k < pts.length; k++) {
-      var m = fit(pts.filter(function (_, i) { return i !== k; })); if (!m) continue;
-      errs.push(abs(sub(model(m, pts[k].W), pts[k].V)));
+      if (!pts[k - 1].use || !pts[k].use) continue;
+      var dW = sub(pts[k].W, pts[k - 1].W), dV = sub(pts[k].V, pts[k - 1].V);
+      sn = add(sn, mul(conj(dW), dV)); sd += dW[0] * dW[0] + dW[1] * dW[1];
     }
-    if (!errs.length) return null;
-    var s = 0; errs.forEach(function (e) { s += e * e; }); return { rms: Math.sqrt(s / errs.length), n: errs.length };
+    if (sd < 1e-9) return null;
+    var a = divr(sn, sd), B = [0, 0], n = 0;
+    pts.forEach(function (p) { if (p.use) { B = add(B, sub(p.V, mul(a, p.W))); n++; } });
+    return { alpha: a, B: divr(B, n) };
   }
+  function model(m, Wn) { return add(m.B, mul(m.alpha, Wn)); }
   // Alle oppsett med 1..maxN skruer, maks én per posisjon. Rangeres etter høyeste predikerte verdi av basene.
   // Topp N per antall skruer (1–6), maks én per posisjon. Rangeres etter høyeste predikerte verdi av basene.
   function optimize(bases, alpha, topN) {
@@ -650,7 +655,7 @@ var BM = (function () {
   }
   function rot(z, deg) { return mul(z, polar(1, deg)); }
   return { rot: rot, MAG: MAG, GRAM: GRAM, add: add, sub: sub, mul: mul, div: div, abs: abs, arg: arg, fromMeas: fromMeas, toMeas: toMeas,
-    W: W, fit: fit, model: model, loo: loo, optimize: optimize, diff: diff };
+    W: W, fit: fit, dfit: dfit, model: model, optimize: optimize, diff: diff };
 })();
 </script>
 
@@ -792,9 +797,8 @@ var BM = (function () {
     pts.forEach(function (p) { res.byI[p.i] = p; });
     if (!pts.length) return res;
     var inc = pts.filter(function (p) { return p.use; });
-    var m = BM.fit(inc); res.model = m; res.inc = inc;
+    var m = BM.dfit(pts) || BM.fit(inc); res.model = m; res.inc = inc;
     res.last = pts[pts.length - 1];
-    res.lastClean = inc[inc.length - 1] || null;
     res.planSetup = setupOf(S.runs[res.last.i].pos); res.Wny = BM.W(res.planSetup);
     var lr = S.runs[res.last.i], lhp = num(lr.hp), lhd = num(lr.hd);
     if (lhp !== null && lhd !== null) res.humsNext = { ips: lhp, deg: lhd };
@@ -833,7 +837,7 @@ var BM = (function () {
       var nx = pts[h.k + 1]; if (!nx) return;
       var row = { k: h.p, next: nx, P: BM.toMeas(h.P), meas: { ips: nx.ips, deg: nx.deg } };
       var eH = BM.sub(nx.V, h.P); row.errH = BM.abs(eH); eSum = BM.add(eSum, eH); sH += row.errH * row.errH;
-      var mk = BM.fit(inc.filter(function (q) { return q.i <= h.p.i; }));
+      var upto = pts.filter(function (q) { return q.i <= h.p.i; }), mk = BM.dfit(upto) || BM.fit(upto.filter(function (q) { return q.use; }));
       if (mk) {
         var tp = BM.add(h.p.V, BM.mul(mk.alpha, BM.sub(nx.W, h.p.W)));
         row.T = BM.toMeas(tp); row.errT = BM.abs(BM.sub(nx.V, tp)); sT += row.errT * row.errT; nT++;
@@ -849,10 +853,11 @@ var BM = (function () {
       res.suggestMode = (nT >= 3 && res.rmsT < res.rmsH) ? "egen" : "blandet";
     }
     if (m) {
-      res.loo = BM.loo(inc);
+      // T = forventet nivå ut fra forrige kjøring og vektendringen
       pts.forEach(function (p, k) {
-        var T = BM.model(m, p.W); p.T = T;
-        if (!p.cyc && k > 0) {
+        if (!k) return;
+        var T = BM.add(pts[k - 1].V, BM.mul(m.alpha, BM.sub(p.W, pts[k - 1].W))); p.T = T;
+        if (!p.cyc) {
           var Sv = BM.mul(BM.add(pts[k - 1].V, T), [0.5, 0]);
           p.avgWarn = BM.abs(BM.sub(Sv, p.V)) < BM.abs(BM.sub(T, p.V));
           p.Tm = BM.toMeas(T); p.Sm = BM.toMeas(Sv);
@@ -863,14 +868,10 @@ var BM = (function () {
     res.off = offOf();
     res.alphaRaw = alpha;
     res.alphaCorr = BM.rot(alpha, -res.off * 30);
-    // B for valgt α: tilpasset B, ellers snitt av V − αW over kjøringene i tilpasningen
-    var Bsrc = inc.length ? inc : [res.last];
-    var Bm = (mode === "egen" && m) ? m.B : cmean(Bsrc.map(function (p) { return BM.sub(p.V, BM.mul(alpha, p.W)); }));
-    res.B = Bm;
-    var ref = res.lastClean || res.last, bases = [];
+    // Prediksjon tar utgangspunkt i siste måling (også om den ikke brukes i α): V_siste + α·(W' − W_siste)
+    var ref = res.last, bases = [];
     res.baseStd = BM.sub(ref.V, BM.mul(alpha, ref.W)); bases.push(res.baseStd);
     res.predStd = BM.toMeas(BM.add(res.baseStd, BM.mul(alpha, res.Wny)));
-    bases.push(Bm); res.predFull = BM.toMeas(BM.add(Bm, BM.mul(alpha, res.Wny)));
     res.opt = BM.optimize(bases, alpha, 3);
     var per = res.opt.perN.filter(function (x) { return x; }), rn = null;
     per.forEach(function (x) { if (!rn && Math.round(x.score * 100) / 100 <= GOAL) rn = x; });
@@ -880,7 +881,7 @@ var BM = (function () {
     res.selN = (SELN && res.opt.byN[SELN] && res.opt.byN[SELN].length) ? SELN : rn.n;
     res.opt.top = res.opt.byN[res.selN];
     res.bestClean = inc.reduce(function (b, p) { return !b || p.ips < b.ips ? p : b; }, null);
-    if (res.humsNext) { var pm = res.predStd || res.predFull; res.humsDist = BM.abs(BM.sub(BM.fromMeas(res.humsNext.ips, res.humsNext.deg), BM.fromMeas(pm.ips, pm.deg))); }
+    if (res.humsNext) { var pm = res.predStd; res.humsDist = BM.abs(BM.sub(BM.fromMeas(res.humsNext.ips, res.humsNext.deg), BM.fromMeas(pm.ips, pm.deg))); }
     return res;
   }
 
@@ -954,7 +955,7 @@ var BM = (function () {
     });
     var nextM = null, nextApx = false;
     if (BETA && A.beta && A.beta.alpha && A.beta.alphaSrc !== "prior" && A.pts.length && !(A.beta.last && A.beta.last.ips > 4.0) && countOf(S.runs[A.beta.last.i].pos) > 0) {
-      var pr = nextM = A.beta.predStd || A.beta.predFull, a3 = RTB.toScreen(pr.deg), q3 = pt(a3, Math.min(max, pr.ips) * PER), ql = P[P.length - 1];
+      var pr = nextM = A.beta.predStd, a3 = RTB.toScreen(pr.deg), q3 = pt(a3, Math.min(max, pr.ips) * PER), ql = P[P.length - 1];
       if (ql) el("line", { x1: ql[0], y1: ql[1], x2: q3[0], y2: q3[1], "class": "pred-arrow" }, layer);
       el("circle", { cx: q3[0], cy: q3[1], r: 8, "class": "pred-dot" }, layer);
       var lq = pt(a3, Math.min(max, pr.ips) * PER + 20);

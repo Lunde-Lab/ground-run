@@ -29,19 +29,18 @@ Indexing or re-installing the shaft changes `B`. `α` depends mainly on engine s
 
 ## 3. Fit within a job (runs ≥ 2)
 
-Complex least squares over the runs marked **Use** gives `B` and `α`. Leave-one-out RMS is computed as a quality figure.
+`α` from the **difference method** (same as `analyze.py`, §6) over consecutive runs that are both marked **Use**. This removes `B`, which drifts a lot within a job (a global fit of constant `B` + `α` to the HUMS #2 job had ≈ 0.7 IPS leave-one-out error and predicted ≈ 0.7 IPS for a setup that measured 0.14). `B` is shown as the mean of `V − α·W` over used runs.
 
-- Needs at least two used runs with different `W`.
+- Needs at least one step between two used runs with different `W`. Fallback: global least squares over the used runs; otherwise `PRIOR`.
 - α mode (only when HUMS predictions are entered): *Own data* (default), *Blended* `(n·α + 2·α_HUMS)/(n + 2)`, *HUMS*. `α_HUMS` = mean of `(P − V)/(W_new − W)` per run with a HUMS prediction `P`.
 
 ## 4. Average check (not power-cycled runs)
 
-A run not power cycled may read as an average of the previous and the true level: `S = (V_{k−1} + T_k)/2`, where `T_k` is the model value. If `S` is closer to the reading than `T_k`, the run gets the warning "looks like an average – actual level ≈ |T_k|".
+A run not power cycled may read as an average of the previous and the true level: `S = (V_{k−1} + T_k)/2`, where `T_k = V_{k−1} + α·(W_k − W_{k−1})` is the level expected from the previous run. If `S` is closer to the reading than `T_k`, the run gets the warning "looks like an average – actual level ≈ |T_k|".
 
 ## 5. Suggestions (optimiser)
 
-- Two bases: `B_std = V_ref − α·W_ref` (from the last clean run) and `B_model` (fitted). Prediction for a full new setup `W'`: `base + α·W'`.
-- Score = the **worse** of the two predictions (robust).
+- Prediction for a full new setup `W'`: `V_last + α·(W' − W_last)`, from the **last reading**, also when that run is not marked Use (Use only controls the α estimate). Score = predicted IPS.
 - Exhaustive search of all setups with 1–6 screws (12 positions × Al/Ti/St, max one per position); top 3 per screw count.
 - Recommended count = fewest screws with score ≤ 0.30; otherwise the best score.
 - Also shown: *Keep current* and *Best clean reading* (setup of the lowest used run).

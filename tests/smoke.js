@@ -21,6 +21,14 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   ok((await txt(pg, '#bOpt')).includes('Within target'), 'Engine 2 example shows "Within target"');
   ok((await pg.$$('.pred-dot')).length === 0, 'No Next point when no weights entered after last run');
 
+  // Engine 2 example without run 7: Next for the HUMS setup fitted after run 6 must be near the measured 0.140 (from last reading, not run 4)
+  await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4-engine2', o = JSON.parse(localStorage.getItem(k)); o.runs[6].ips = ''; o.runs[6].deg = ''; localStorage.setItem(k, JSON.stringify(o)); });
+  await pg.reload();
+  const nx = (await txt(pg, '#legend')).match(/Next \(predicted\) ([\d.]+) IPS/);
+  ok(nx && +nx[1] < 0.30, 'Engine 2 run 1–6: Next for HUMS setup below 0.30 (' + (nx && nx[1]) + ')');
+  await pg.evaluate(() => localStorage.removeItem('vibrasjonsdiagram-v4-engine2'));
+  await pg.reload();
+
   // Engine 1, single run -> run-1 suggestions from PRIOR
   await pg.evaluate(() => {
     const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)), E = () => Array.from({ length: 12 }, () => []);

@@ -586,7 +586,8 @@ table.btab { min-width: 0; table-layout: fixed; }
     <div class="hw-w" id="hwW" role="radiogroup" aria-labelledby="hwWl">
       <button type="button" role="radio" class="Al" data-w="Al">Al</button><button type="button" role="radio" class="Ti" data-w="Ti">Ti</button><button type="button" role="radio" class="St" data-w="St">St</button><button type="button" role="radio" data-w="">None</button>
     </div>
-    <div class="btns end"><button type="button" class="primary" id="hwDone">Done</button></div>
+    <p class="fine2" id="hwMax" hidden></p>
+    <div class="btns end"><button type="button" id="hwUse"></button><button type="button" class="primary" id="hwDone">Done</button></div>
   </div>
 </div>
 
@@ -1302,12 +1303,16 @@ var BM = (function () {
       var on = b.getAttribute("data-w") === cur; b.classList.toggle("on", on); b.setAttribute("aria-checked", on);
     });
     $("hwWl").textContent = "Weight at pos " + (hw.j + 1);
+    var n = countOf(pos), same = JSON.stringify(pos) === JSON.stringify(hw.r.pos);
+    $("hwUse").textContent = same && n ? "Fitted after run " + (hw.i + 1) + " ✓" : "Use as fitted after run " + (hw.i + 1);
+    $("hwUse").disabled = !n || n > MAXW || same;
+    $("hwMax").hidden = n <= MAXW; $("hwMax").textContent = "More than " + MAXW + " screws – enter them in the runs table.";
   }
   function openHw(i, btn) {
     closePicker();
     var r = S.runs[i]; r.hw = hwOf(r).map(function (l) { return l.slice(0, 1); });
     var first = 0; r.hw.some(function (l, j) { if (l.length) { first = j; return true; } return false; });
-    hw = { r: r, j: first, btn: btn };
+    hw = { r: r, i: i, j: first, btn: btn };
     $("hwTitle").textContent = "Run " + (i + 1) + " · HUMS recommended weights";
     hwShow(); hwEl.hidden = false;
   }
@@ -1324,6 +1329,15 @@ var BM = (function () {
   });
   $("hwClear").addEventListener("click", function () { if (hw) { hw.r.hw = emptyPos(); hwShow(); } });
   $("hwDone").addEventListener("click", hwClose);
+  // Kopier HUMS sine anbefalte vekter til kjøringens vekter (de som settes på etter kjøringen)
+  $("hwUse").addEventListener("click", function () {
+    if (!hw) return; var r = hw.r, i = hw.i;
+    var had = countOf(r.pos);
+    hwClose();
+    function go() { r.pos = r.hw.map(function (l) { return l.slice(); }); save(); refresh(); }
+    if (had) ask("Replace weights?", "Run " + (i + 1) + " already has weights fitted after it. Replace them with the HUMS recommended weights?", "Replace", go);
+    else go();
+  });
   hwEl.addEventListener("click", function (e) { if (e.target === hwEl) hwClose(); });
   document.addEventListener("keydown", function (e) { if (hw && (e.key === "Escape" || e.key === "Enter")) { e.preventDefault(); hwClose(); } });
 

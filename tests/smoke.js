@@ -38,6 +38,12 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   ok((await txt(pg, '#bTable tr[data-i="0"] button[data-act="hw"]')).trim() === '2 Ti7 St', 'HUMS rec. weights cell shows 2 Ti, 7 St');
   const hw = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4-engine2')).runs[0].hw);
   ok(hw && hw[6][0] === 'St' && hw[1][0] === 'Ti', 'HUMS rec. weights saved');
+  // Use as fitted: run 1 already has weights -> confirm -> pos replaced
+  await pg.click('#bTable tr[data-i="0"] button[data-act="hw"]'); await pg.click('#hwUse');
+  ok(await pg.isVisible('#confirmModal'), 'Replacing existing run weights asks first');
+  await pg.click('#cfYes');
+  const pos0 = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4-engine2')).runs[0].pos);
+  ok(pos0[6][0] === 'St' && pos0[1][0] === 'Ti' && pos0.flat().length === 2, 'HUMS rec. weights copied to run weights');
 
   // Engine 1, single run -> run-1 suggestions from PRIOR
   await pg.evaluate(() => {

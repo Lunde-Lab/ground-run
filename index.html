@@ -28,7 +28,7 @@
   --good: #14935c;
   --warn: #c97a00;
   --crit: #d02b2b;
-  --accent-rgb: 0,127,148; --good-rgb: 20,147,92; --warn-rgb: 201,122,0; --crit-rgb: 208,43,43; --grid-strong-rgb: 106,125,137; --muted-rgb: 86,103,114;
+  --accent-rgb: 0,127,148; --good-rgb: 20,147,92; --warn-rgb: 201,122,0; --crit-rgb: 208,43,43; --grid-strong-rgb: 106,125,137; --muted-rgb: 86,103,114; --eng2: #7a4fc9; --eng2-rgb: 122,79,201;
   --b-blue: #3a7fd5; --b-red: #e2701d; --b-black: #111111; --b-yellow: #f2d500;
   --font-ui: "Barlow", system-ui, sans-serif;
   --font-data: "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -37,13 +37,13 @@
   :root:not([data-theme="light"]) {
     --bg: #080d11; --panel: #0f1820; --panel2: #0b1319; --fg: #e3edf2; --muted: #8499a5;
     --grid: #22323d; --grid-strong: #5d7787; --line: #1f2d37; --accent: #35d4ea;
-    --good: #3fdc98; --warn: #ffb43a; --crit: #ff6464; color-scheme: dark; --accent-rgb: 53,212,234; --good-rgb: 63,220,152; --warn-rgb: 255,180,58; --crit-rgb: 255,100,100; --grid-strong-rgb: 93,119,135; --muted-rgb: 132,153,165;
+    --good: #3fdc98; --warn: #ffb43a; --crit: #ff6464; color-scheme: dark; --accent-rgb: 53,212,234; --good-rgb: 63,220,152; --warn-rgb: 255,180,58; --crit-rgb: 255,100,100; --grid-strong-rgb: 93,119,135; --muted-rgb: 132,153,165; --eng2: #b79cff; --eng2-rgb: 183,156,255;
   }
 }
 :root[data-theme="dark"] {
   --bg: #080d11; --panel: #0f1820; --panel2: #0b1319; --fg: #e3edf2; --muted: #8499a5;
   --grid: #22323d; --grid-strong: #5d7787; --line: #1f2d37; --accent: #35d4ea;
-  --good: #3fdc98; --warn: #ffb43a; --crit: #ff6464; color-scheme: dark; --accent-rgb: 53,212,234; --good-rgb: 63,220,152; --warn-rgb: 255,180,58; --crit-rgb: 255,100,100; --grid-strong-rgb: 93,119,135; --muted-rgb: 132,153,165;
+  --good: #3fdc98; --warn: #ffb43a; --crit: #ff6464; color-scheme: dark; --accent-rgb: 53,212,234; --good-rgb: 63,220,152; --warn-rgb: 255,180,58; --crit-rgb: 255,100,100; --grid-strong-rgb: 93,119,135; --muted-rgb: 132,153,165; --eng2: #b79cff; --eng2-rgb: 183,156,255;
 }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
@@ -303,6 +303,7 @@ table.acc { min-width: 600px; table-layout: fixed; }
 .rh-l { display: flex; align-items: center; gap: 12px; }
 #runsT { display: flex; align-items: center; gap: 10px; }
 .eng-tag { display: inline-flex; align-items: center; min-height: 32px; padding: 4px 12px; border-radius: 8px; border: 1.5px solid var(--accent); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); font-size: .95rem; font-weight: 700; letter-spacing: .04em; text-transform: none; white-space: nowrap; }
+.eng-tag.e2 { border-color: var(--eng2); background: rgba(var(--eng2-rgb), 0.14); color: var(--eng2); }
 .beta-btn { min-height: 40px; padding: 6px 14px; border-radius: 999px; font-size: .85rem; font-weight: 700; letter-spacing: .02em; }
 .beta-btn[aria-pressed="true"] { background: var(--warn); border-color: var(--warn); color: var(--panel); }
 tr.excl > td, tr.excl > th { opacity: .45; }
@@ -1341,7 +1342,7 @@ var BM = (function () {
       (nums.length > 1 ? 'Runs ' : 'Run ') + join(nums) + ' measured ' + join(vals) + ' IPS, which is above the 4.0 IPS limit. ' +
       'Index the shaft per AMM 18-12-02 and take a new reading before fitting any weights.</div>';
   }
-  function refresh() { $("engTag").textContent = "Engine " + ENG; analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); if (BETA) drawBeta(); }
+  function refresh() { $("engTag").textContent = "Engine " + ENG; $("engTag").className = "eng-tag" + (ENG === 2 ? " e2" : ""); analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); if (BETA) drawBeta(); }
   // ---------- MR Ground Track & Balance ----------
   var MRKEY = "vibrasjonsdiagram-mrtb";
   var BLADES = [["Blue", "var(--b-blue)"], ["Red", "var(--b-red)"], ["Black", "var(--b-black)"], ["Yellow", "var(--b-yellow)"]];

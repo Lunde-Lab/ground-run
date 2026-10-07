@@ -47,4 +47,12 @@ js = [synth(A.polar(2, d), [[], [(p, "St")], [(p, "Ti"), (p + 3, "Al")]], A.pola
       for d, p, t in ((30, 2, -20), (100, 5, 0), (250, 8, 25))]
 h = A.hums_report(1, [(j, None) for j in js])
 assert h["use"] is True and abs(h["cAng"] - 30) < 0.1, h
+
+# HUMS prediction for its own recommended weights (hums_w) is rescaled to the weights actually fitted
+jw = synth(A.polar(2, 30), [[], [(2, "St")]], at, ah)
+jw["runs"][0]["hums"] = (lambda z: (abs(z), (40 - math.degrees(cmath.phase(z))) % 360))(
+    A.meas(jw["runs"][0]["ips"], jw["runs"][0]["deg"]) + ah * A.weight([(5, "Ti")]))
+jw["runs"][0]["hums_w"] = [(5, "Ti")]
+dV, dW, u, k = A.hums_steps(jw)[0]
+assert abs(u - ah * dW) < 1e-9
 print("analyze tests passed")

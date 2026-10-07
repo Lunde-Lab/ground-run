@@ -55,7 +55,8 @@ def from_app_engine(eng, o, src):
         if ips is None or deg is None: continue
         use = r["use"] if "use" in r else r.get("cyc", True) is not False
         runs.append({"ips": ips, "deg": deg, "after": pos_to_setup(r.get("pos")), "use": bool(use),
-                     "hums": parse_hums([r.get("hp", ""), r.get("hd", "")])})
+                     "hums": parse_hums([r.get("hp", ""), r.get("hd", "")]),
+                     "hums_w": pos_to_setup(r.get("hw")) or None})
     if len(runs) < 2: return None
     return {"engine": eng, "file": src, "start": pos_to_setup(o.get("start")), "runs": runs}
 
@@ -70,7 +71,8 @@ def load_jobs():
                 if j: j["date"] = d.get("date", ""); jobs.append(j)
             continue
         runs = [{"ips": num(r["ips"]), "deg": num(r["deg"]), "after": parse_setup(r.get("after", [])),
-                 "use": r.get("use", True), "hums": parse_hums(r.get("hums"))} for r in d["runs"]]
+                 "use": r.get("use", True), "hums": parse_hums(r.get("hums")),
+                 "hums_w": parse_setup(r["hums_w"]) if r.get("hums_w") else None} for r in d["runs"]]
         jobs.append({"engine": int(d["engine"]), "file": name, "date": d.get("date", ""),
                      "start": parse_setup(d.get("start", [])), "runs": runs})
     return jobs
@@ -94,8 +96,15 @@ def hums_steps(job):
     """Steps where HUMS predicted run k+1 from run k: (dV, dW, u, k) with u = P - V_k (HUMS-predicted change)."""
     rs, out = job["runs"], []
     for dV, dW, k in steps(job):
-        h = rs[k - 1].get("hums")
-        if h: out.append((dV, dW, meas(*h) - meas(rs[k - 1]["ips"], rs[k - 1]["deg"]), k))
+        r = rs[k - 1]; h = r.get("hums")
+        if not h: continue
+        u = meas(*h) - meas(r["ips"], r["deg"])
+        if r.get("hums_w"):   # prediction was for HUMS's recommended weights: scale to the weights actually fitted
+            W0 = weight(job["start"] if k == 1 else rs[k - 2]["after"])
+            dWh = weight(r["hums_w"]) - W0
+            if abs(dWh) < 1e-9: continue
+            u = u / dWh * dW
+        out.append((dV, dW, u, k))
     return out
 
 

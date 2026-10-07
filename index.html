@@ -327,6 +327,20 @@ table.btab { min-width: 0; table-layout: fixed; }
 .btab thead th { height: auto; padding: 6px 4px; line-height: 1.2; font-size: .7rem; }
 .btab td.note2 { font-size: .78rem; text-align: left; padding: 4px 8px; line-height: 1.3; }
 .btab .cell { height: 50px; min-height: 50px; font-size: .9rem; }
+.btab .cell.hwc { height: auto; min-height: 50px; flex-wrap: wrap; gap: 3px; padding: 4px; }
+.mw { font-family: var(--font-data); font-size: .76rem; font-weight: 700; padding: 1px 5px; border-radius: 6px; background: rgba(var(--cr), 0.16); border: 1px solid rgba(var(--cr), 0.45); white-space: nowrap; }
+.hw-pos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.hw-pos button { min-height: 54px; padding: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-data); font-weight: 700; font-size: 1.05rem; line-height: 1.1; }
+.hw-pos button small { font-size: .7rem; font-weight: 700; color: var(--c, var(--muted)); min-height: .8rem; }
+.hw-pos button.Al, .hw-pos button.Ti, .hw-pos button.St { background: rgba(var(--cr), 0.16); border-color: rgba(var(--cr), 0.45); }
+.hw-pos button[aria-checked="true"] { box-shadow: 0 0 0 3px var(--accent); border-color: var(--accent); }
+.hw-w { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.hw-w button { min-height: 54px; font-family: var(--font-data); font-size: 1.05rem; font-weight: 700; padding: 0 4px; }
+.hw-w button.Al, .hw-w button.Ti, .hw-w button.St { background: rgba(var(--cr), 0.16); border-color: rgba(var(--cr), 0.45); }
+.hw-w button.on { background: var(--c, var(--accent)); border-color: var(--c, var(--accent)); color: var(--panel); }
+.hw-w button[data-w=""] { font-family: var(--font-ui); font-weight: 500; font-size: .95rem; color: var(--muted); }
+.hw-w button[data-w=""].on { background: var(--muted); color: var(--panel); }
+.hw-lbl { font-size: .8rem; color: var(--muted); font-weight: 600; margin-bottom: -4px; }
 .tog { min-height: 40px; height: 40px; padding: 0 8px; font-size: .85rem; border-radius: 8px; width: calc(100% - 8px); }
 .tog.no { background: rgba(var(--crit-rgb), 0.12); border-color: rgba(var(--crit-rgb), 0.4); }
 .avg { color: var(--warn); font-weight: 600; }
@@ -560,6 +574,22 @@ table.btab { min-width: 0; table-layout: fixed; }
   </div>
 </div>
 
+<div class="modal" id="hwModal" role="dialog" aria-modal="true" aria-labelledby="hwTitle" hidden>
+  <div class="sheet">
+    <div class="nm-top">
+      <h3 id="hwTitle"></h3>
+      <div class="btns"><button type="button" id="hwClear">Clear all</button></div>
+    </div>
+    <div class="hw-lbl">Position</div>
+    <div class="hw-pos" id="hwPos" role="radiogroup" aria-label="Position"></div>
+    <div class="hw-lbl" id="hwWl">Weight</div>
+    <div class="hw-w" id="hwW" role="radiogroup" aria-labelledby="hwWl">
+      <button type="button" role="radio" class="Al" data-w="Al">Al</button><button type="button" role="radio" class="Ti" data-w="Ti">Ti</button><button type="button" role="radio" class="St" data-w="St">St</button><button type="button" role="radio" data-w="">None</button>
+    </div>
+    <div class="btns end"><button type="button" class="primary" id="hwDone">Done</button></div>
+  </div>
+</div>
+
 <div class="picker" id="picker" role="menu" hidden>
   <div class="pk-title"><span id="pkTitle"></span><span id="pkCount"></span></div>
   <div class="pk-row">
@@ -761,6 +791,8 @@ var BM = (function () {
   function save() { SELN = null; try { localStorage.setItem(KEYS[ENG], JSON.stringify(S)); } catch (e) {} }
 
   function setupOf(pos) { var s = []; pos.forEach(function (list, j) { list.forEach(function (t) { s.push([j + 1, t]); }); }); return s; }
+  // HUMS anbefalte vekter etter kjøringen (samme format som pos). Mangler i eldre data → tom.
+  function hwOf(r) { return Array.isArray(r.hw) && r.hw.length === NPOS ? r.hw : emptyPos(); }
   function countOf(pos) { var n = 0; pos.forEach(function (l) { n += l.length; }); return n; }
   var GOAL = 0.3, LIMIT = 0.5, BETA = false;
   [KEYS[1], KEYS[2]].forEach(function (k) { try { var o = JSON.parse(localStorage.getItem(k)); if (o && o.a0) { delete o.a0; localStorage.setItem(k, JSON.stringify(o)); } } catch (e) {} });
@@ -808,7 +840,8 @@ var BM = (function () {
     pts.forEach(function (p, k) {
       var r = S.runs[p.i], hp = num(r.hp), hd = num(r.hd);
       if (hp === null || hd === null) return;
-      var Wn = BM.W(setupOf(r.pos)), dW = BM.sub(Wn, p.W), P = BM.fromMeas(hp, hd);
+      // HUMS-prediksjonen gjelder HUMS sine anbefalte vekter; uten dem antas de lik vektene som ble satt på
+      var Wn = BM.W(setupOf(countOf(hwOf(r)) ? hwOf(r) : r.pos)), dW = BM.sub(Wn, p.W), P = BM.fromMeas(hp, hd);
       hl.push({ k: k, p: p, P: P, a: BM.abs(dW) > 1e-9 ? BM.div(BM.sub(P, p.V), dW) : null });
     });
     res.hl = hl;
@@ -1084,7 +1117,7 @@ var BM = (function () {
     var B = A.beta || { pts: [] };
     // Tabell per kjøring
     var tb = $("bTable");
-    var h = '<thead><tr><th>Use</th><th>Run</th><th>HUMS pred. IPS</th><th>HUMS pred. °</th></tr></thead><tbody>';
+    var h = '<thead><tr><th>Use</th><th>Run</th><th>HUMS pred. IPS</th><th>HUMS pred. °</th><th>HUMS rec. weights</th></tr></thead><tbody>';
     S.runs.forEach(function (r, i) {
       var p = B.byI[i], ex = p && !p.use, note = "";
       if (p && p.avgWarn) note = '<span class="avg">The reading looks like an average – actual level may be approx. ' + fmt(p.Tm.ips, 2) + ' ips</span>';
@@ -1093,8 +1126,10 @@ var BM = (function () {
       h += '<tr class="' + (ex ? "excl" : "") + '" data-i="' + i + '">' +
         '<td><button type="button" class="tog' + (useOf(r) ? ' on' : '') + '" data-act="use">' + (useOf(r) ? '✓' : '–') + '</button></td>' +
         '<th class="run" scope="row">' + (i + 1) + '</th>' +
-        '<td><button type="button" class="cell num' + (r.hp ? '' : ' empty') + '" data-act="hp">' + (r.hp || '–') + '</button></td>' +
-        '<td><button type="button" class="cell num' + (r.hd ? '' : ' empty') + '" data-act="hd">' + (r.hd || '–') + '</button></td>' +
+        '<td><button type="button" class="cell num' + (r.hp ? '' : ' empty') + '" data-act="hp">' + (r.hp ? String(r.hp).replace(",", ".") : '–') + '</button></td>' +
+        '<td><button type="button" class="cell num' + (r.hd ? '' : ' empty') + '" data-act="hd">' + (r.hd ? String(r.hd).replace(",", ".") : '–') + '</button></td>' +
+        '<td><button type="button" class="cell hwc' + (countOf(hwOf(r)) ? '' : ' empty') + '" data-act="hw" aria-label="Run ' + (i + 1) + ' HUMS recommended weights">' +
+          (countOf(hwOf(r)) ? setupOf(hwOf(r)).map(function (w) { return '<span class="mw ' + w[1] + '">' + w[0] + ' ' + w[1] + '</span>'; }).join('') : '–') + '</button></td>' +
         '</tr>';
     });
     tb.innerHTML = h + '</tbody>';
@@ -1199,6 +1234,7 @@ var BM = (function () {
     if (act === "cyc") { r.cyc = !cycOf(r); delete r.use; }
     else if (act === "mode") r.mode = r.mode === "Prompted" ? "Forced" : r.mode === "Forced" ? "" : "Prompted";
     else if (act === "use") r.use = !useOf(r);
+    else if (act === "hw") { openHw(i, b); return; }
     else if (act === "hp" || act === "hd") {
       openNum({ kind: act === "hp" ? "ips" : "deg", title: "Run " + (i + 1) + " · HUMS predicted " + (act === "hp" ? "IPS" : "degrees"), btn: b,
         get: function () { return r[act]; }, set: function (v) { r[act] = v; } });
@@ -1253,6 +1289,43 @@ var BM = (function () {
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !picker.hidden) { closePicker(); refresh(); } });
   window.addEventListener("resize", function () { if (!picker.hidden) { closePicker(); refresh(); } });
   $("tablewrap").addEventListener("scroll", function () { if (!picker.hidden) { closePicker(); refresh(); } });
+
+  // ---------- HUMS anbefalte vekter ----------
+  var hwEl = $("hwModal"), hw = null;
+  function hwShow() {
+    var pos = hw.r.hw;
+    $("hwPos").innerHTML = pos.map(function (l, j) {
+      return '<button type="button" role="radio" aria-checked="' + (j === hw.j) + '" data-p="' + j + '" class="' + (l[0] || '') + '">' + (j + 1) + '<small>' + (l[0] || '') + '</small></button>';
+    }).join('');
+    var cur = pos[hw.j][0] || "";
+    Array.prototype.forEach.call(document.querySelectorAll("#hwW button"), function (b) {
+      var on = b.getAttribute("data-w") === cur; b.classList.toggle("on", on); b.setAttribute("aria-checked", on);
+    });
+    $("hwWl").textContent = "Weight at pos " + (hw.j + 1);
+  }
+  function openHw(i, btn) {
+    closePicker();
+    var r = S.runs[i]; r.hw = hwOf(r).map(function (l) { return l.slice(0, 1); });
+    var first = 0; r.hw.some(function (l, j) { if (l.length) { first = j; return true; } return false; });
+    hw = { r: r, j: first, btn: btn };
+    $("hwTitle").textContent = "Run " + (i + 1) + " · HUMS recommended weights";
+    hwShow(); hwEl.hidden = false;
+  }
+  function hwClose() {
+    if (!hw) return; var b = hw.btn;
+    if (!countOf(hw.r.hw)) delete hw.r.hw;
+    hw = null; hwEl.hidden = true; save(); refresh();
+    if (b) { try { b.focus(); } catch (e) {} }
+  }
+  $("hwPos").addEventListener("click", function (e) { var b = e.target.closest("button[data-p]"); if (!b || !hw) return; hw.j = +b.getAttribute("data-p"); hwShow(); });
+  $("hwW").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-w]"); if (!b || !hw) return;
+    var v = b.getAttribute("data-w"), l = hw.r.hw[hw.j]; l.length = 0; if (v) l.push(v); hwShow();
+  });
+  $("hwClear").addEventListener("click", function () { if (hw) { hw.r.hw = emptyPos(); hwShow(); } });
+  $("hwDone").addEventListener("click", hwClose);
+  hwEl.addEventListener("click", function (e) { if (e.target === hwEl) hwClose(); });
+  document.addEventListener("keydown", function (e) { if (hw && (e.key === "Escape" || e.key === "Enter")) { e.preventDefault(); hwClose(); } });
 
   // ---------- Talltastatur ----------
   var nmEl = $("numModal"), nmDisp = $("nmDisp"), nm = null;

@@ -29,6 +29,16 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.evaluate(() => localStorage.removeItem('vibrasjonsdiagram-v4-engine2'));
   await pg.reload();
 
+  // HUMS recommended weights: cell -> modal -> pos 7 St, pos 2 Ti -> compact cell, saved as hw
+  await pg.click('#bTable tr[data-i="0"] button[data-act="hw"]');
+  ok(await pg.isVisible('#hwModal'), 'HUMS rec. weights modal opens');
+  await pg.click('#hwPos button[data-p="6"]'); await pg.click('#hwW button[data-w="St"]');
+  await pg.click('#hwPos button[data-p="1"]'); await pg.click('#hwW button[data-w="Ti"]');
+  await pg.click('#hwDone');
+  ok((await txt(pg, '#bTable tr[data-i="0"] button[data-act="hw"]')).trim() === '2 Ti7 St', 'HUMS rec. weights cell shows 2 Ti, 7 St');
+  const hw = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4-engine2')).runs[0].hw);
+  ok(hw && hw[6][0] === 'St' && hw[1][0] === 'Ti', 'HUMS rec. weights saved');
+
   // Engine 1, single run -> run-1 suggestions from PRIOR
   await pg.evaluate(() => {
     const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)), E = () => Array.from({ length: 12 }, () => []);

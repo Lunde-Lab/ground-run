@@ -952,8 +952,9 @@ var BM = (function () {
       var a = RTB.toScreen(p.deg), lpp = pt(a, Math.min(max, p.ips) * PER + 18);
       el("text", { x: lpp[0], y: lpp[1] + 4, "text-anchor": "middle", "class": "ptl" }, g, p.ips > max ? (p.i + 1) + " (" + fmt(p.ips, 2) + ")" : p.i + 1);
     });
+    var nextM = null, nextApx = false;
     if (BETA && A.beta && A.beta.alpha && A.beta.alphaSrc !== "prior" && A.pts.length && !(A.beta.last && A.beta.last.ips > 4.0) && countOf(S.runs[A.beta.last.i].pos) > 0) {
-      var pr = A.beta.predStd || A.beta.predFull, a3 = RTB.toScreen(pr.deg), q3 = pt(a3, Math.min(max, pr.ips) * PER), ql = P[P.length - 1];
+      var pr = nextM = A.beta.predStd || A.beta.predFull, a3 = RTB.toScreen(pr.deg), q3 = pt(a3, Math.min(max, pr.ips) * PER), ql = P[P.length - 1];
       if (ql) el("line", { x1: ql[0], y1: ql[1], x2: q3[0], y2: q3[1], "class": "pred-arrow" }, layer);
       el("circle", { cx: q3[0], cy: q3[1], r: 8, "class": "pred-dot" }, layer);
       var lq = pt(a3, Math.min(max, pr.ips) * PER + 20);
@@ -970,6 +971,7 @@ var BM = (function () {
       var qa = zpt(BM.add(ap.V, dz)), qla = P[P.length - 1];
       if (qla) el("line", { x1: qla[0], y1: qla[1], x2: qa[0], y2: qa[1], "class": "pred-arrow" }, layer);
       el("circle", { cx: qa[0], cy: qa[1], r: 8, "class": "pred-dot approx" }, layer);
+      nextM = BM.toMeas(BM.add(ap.V, dz)); nextApx = true;
       var la = pt(BM.arg(BM.add(ap.V, dz)), Math.min(max, BM.abs(BM.add(ap.V, dz))) * PER + 20);
       el("text", { x: la[0], y: la[1] + 4, "text-anchor": "middle", "class": "pred-l" }, layer, "Next ≈");
     }
@@ -993,7 +995,7 @@ var BM = (function () {
       el("text", { x: qi[0], y: qi[1] + 4.5, "text-anchor": "middle", "class": "scr-t" }, gw, w[1]);
     });
     $("legend").innerHTML =
-      (BETA ? '<span><i class="ring-i"></i>Next (predicted)</span>' + (A.beta && A.beta.alphaSrc === "prior" && A.beta.approx && A.beta.approx.userSet && A.pts.length && !(A.beta.last.ips > 4.0) ? '<span><i class="zone-i"></i>Approx. range (α uncertain)</span>' : '') + '<span><i class="dia-i"></i>HUMS (predicted)</span>' : '');
+      (BETA ? '<span><i class="ring-i"></i>Next (predicted)' + (nextM ? ' <b>' + (nextApx ? '≈ ' : '') + fmt(nextM.ips, 2) + ' IPS / ' + fdeg(nextM.deg) + '°</b>' : '') + '</span>' + (A.beta && A.beta.alphaSrc === "prior" && A.beta.approx && A.beta.approx.userSet && A.pts.length && !(A.beta.last.ips > 4.0) ? '<span><i class="zone-i"></i>Approx. range (α uncertain)</span>' : '') + '<span><i class="dia-i"></i>HUMS (predicted)</span>' : '');
   }
 
   // ---------- Tabell ----------

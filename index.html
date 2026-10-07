@@ -136,7 +136,6 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .pred-arrow { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 4; fill: none; }
 .pred-dot { fill: var(--panel); stroke: var(--accent); stroke-width: 3; }
 .pred-dot.approx { stroke-dasharray: 4 3; }
-.opt2 .unc { font-family: var(--font-data); font-size: .85rem; font-weight: 600; color: var(--muted); }
 .approx-zone { fill: rgba(var(--accent-rgb), 0.13); stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 3 4; stroke-opacity: .6; }
 .legend i.zone-i { width: 14px; height: 10px; border-radius: 3px; background: rgba(var(--accent-rgb), 0.18); border: 1.5px dashed var(--accent); }
 .pred-unc { fill: var(--accent); fill-opacity: .08; stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; }
@@ -299,7 +298,6 @@ table.acc { min-width: 600px; table-layout: fixed; }
 .avgbox { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border-radius: 12px; background: rgba(var(--warn-rgb), 0.14); border: 1px solid rgba(var(--warn-rgb), 0.5); font-size: .95rem; line-height: 1.4; }
 .avgbox b { font-family: var(--font-data); }
 .idxbeta { font-weight: 600; padding: 12px 14px; border-radius: 12px; background: rgba(var(--crit-rgb), 0.14); border: 2px solid var(--crit); }
-@media (max-width: 560px) { .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .rh-l { display: flex; align-items: center; gap: 12px; }
 #runsT { display: flex; align-items: center; gap: 10px; }
 .eng-tag { display: inline-flex; align-items: center; min-height: 32px; padding: 4px 12px; border-radius: 8px; border: 1.5px solid var(--accent); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); font-size: .95rem; font-weight: 700; letter-spacing: .04em; text-transform: none; white-space: nowrap; }
@@ -354,25 +352,35 @@ table.btab { min-width: 0; table-layout: fixed; }
 .pern button { min-height: 52px; padding: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-data); font-weight: 700; font-size: .95rem; line-height: 1.2; }
 .pern button small { font-family: var(--font-ui); font-size: .68rem; font-weight: 500; color: var(--muted); }
 .pern button span { font-family: var(--font-ui); font-size: .72rem; font-weight: 500; color: var(--muted); }
-.pern button.rec { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); }
-.pern button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); box-shadow: none; }
+.pern button.rec { border-color: var(--c); box-shadow: inset 0 -4px 0 var(--c); }
+.pern button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .pern button[aria-checked="true"] span, .pern button[aria-checked="true"] small { color: var(--bg); }
-.opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.opt2 { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; background: var(--bg); }
-.opt2.best { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.opt2.back { border-style: dashed; }
-.opt2 .oh { display: flex; flex-direction: column; gap: 2px; font-size: .75rem; color: var(--muted); font-weight: 600; }
-.opt2 .oh span:first-child { text-transform: uppercase; letter-spacing: .08em; }
-.opt2 .ores { font-family: var(--font-data); font-size: 1.3rem; font-weight: 700; color: var(--c); }
-.opt2 .ores .pl { display: block; font-family: var(--font-ui); font-size: .72rem; font-weight: 600; color: var(--muted); }
-.opt2 .ores em { font-style: normal; font-size: .78rem; color: var(--muted); font-weight: 500; }
-.opt2 .osub { font-size: .78rem; color: var(--muted); font-family: var(--font-data); }
+.rech { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.rech .rl2 { font-weight: 600; }
+.rech b { font-family: var(--font-data); font-size: 1.5rem; color: var(--c); line-height: 1.1; }
+.rech .rs { font-size: .85rem; color: var(--muted); }
+.sugl { display: flex; flex-direction: column; }
+.srow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.srow:first-child { border-top: 0; }
+.srow.best { background: rgba(var(--accent-rgb), 0.08); border-radius: 10px; border-top-color: transparent; padding-inline: 6px; margin-inline: -6px; }
+.srow.best + .srow { border-top-color: transparent; }
+.srow .rk { font-family: var(--font-data); font-weight: 700; color: var(--muted); text-align: center; }
+.srow.back .rk { font-size: .72rem; line-height: 1.1; }
+.srow button { min-width: 92px; }
+.sips { font-family: var(--font-data); font-size: 1.15rem; font-weight: 700; color: var(--c); text-align: right; min-width: 64px; line-height: 1.15; }
+.sips small, .sips .unc { display: block; font-family: var(--font-ui); font-size: .7rem; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.sips .unc { font-family: var(--font-data); font-weight: 600; }
+.ssub { font-size: .8rem; font-weight: 600; color: var(--muted); padding: 12px 0 4px; }
+.ssub + .srow { border-top: 1px solid var(--line); }
+.pern button i { font-style: normal; }
+.sips .unc i { font-style: normal; }
+.srow .chip2 { white-space: nowrap; }
+@media (max-width: 560px) { .pern { gap: 4px; } .pern button { padding: 2px; font-size: .85rem; } .pern button i { display: none; } .sips .unc i { display: none; } .srow { grid-template-columns: 30px minmax(0, 1fr) auto auto; gap: 8px; } .srow button { min-width: 72px; padding-inline: 10px; } }
 .chips2 { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip2 { font-family: var(--font-data); font-size: .8rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(var(--cr), 0.16); border: 1px solid rgba(var(--cr), 0.45); }
 .chip2 small { font-weight: 500; color: var(--muted); }
 .dl2 { font-size: .82rem; line-height: 1.5; }
 .dl2 b { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-right: 5px; }
-.opt2 button { min-height: 44px; margin-top: auto; font-size: .92rem; }
 .scrollhint { font-size: .8rem; color: var(--muted); margin: 0; line-height: 1.45; }
 
 /* Forslag */
@@ -1051,6 +1059,13 @@ var BM = (function () {
     if (!setup.length) return '<span class="chip2" style="--c:var(--muted);--cr:var(--muted-rgb)">no screws</span>';
     return setup.map(function (w) { return '<span class="chip2 ' + w[1] + '">' + wtxt(w) + ' <small>' + fmt(BM.MAG[w[1]], 2) + ' IPS</small></span>'; }).join("");
   }
+  // Én forslagslinje: rang · skruer · IPS (+ område) · Apply
+  function srow(o) {
+    return '<div class="srow ' + (o.cls || '') + '"><span class="rk">' + o.rk + '</span><div class="chips2">' + chips3(o.setup) + '</div>' +
+      '<div class="sips ' + zone(o.ips) + '">' + fmt(o.ips, o.d || 2) + '<small>' + o.lbl + '</small>' +
+      (o.rng ? '<span class="unc"><i>Range </i>' + fmt(o.rng[0], 2) + '–' + fmt(o.rng[1], 2) + '</span>' : '') + '</div>' +
+      (o.apply !== undefined ? '<button type="button" class="' + (o.primary ? 'primary' : '') + '" data-apply="' + o.apply + '">Apply</button>' : '<span></span>') + '</div>';
+  }
   function chips3(setup) {
     if (!setup.length) return '<span class="chip2" style="--c:var(--muted);--cr:var(--muted-rgb)">no screws</span>';
     return setup.map(function (w) { return '<span class="chip2 ' + w[1] + '"><small>Pos</small> ' + w[0] + ' · ' + w[1] + '</span>'; }).join("");
@@ -1093,9 +1108,7 @@ var BM = (function () {
     // Innenfor target: ingen endring
     if (B.last.ips < GOAL) {
       $("bOpt").innerHTML = '<div class="recn good"><div><span class="rl2">Within target</span><b>' + fmt(B.last.ips, 2) + '</b><span class="rs">IPS on run ' + (B.last.i + 1) + ' · below 0.30 – no change needed</span></div></div>' +
-        '<div class="opts"><div class="opt2 back good"><div class="oh"><span>Keep current (run ' + (B.last.i + 1) + ')</span></div>' +
-        '<div class="ores"><span class="pl">Measured</span>' + fmt(B.last.ips, 3) + ' <em>IPS</em></div>' +
-        '<div class="chips2">' + chips3(B.last.setup) + '</div></div></div>';
+        '<div class="sugl">' + srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, d: 3, lbl: 'measured' }) + '</div>';
       return;
     }
     // Optimering
@@ -1108,28 +1121,21 @@ var BM = (function () {
       return [lo, hi];
     }
     var oh = isPrior ? '<div class="stdwarn">Run 1 suggestion – based on ' + (B.priorHums ? 'the HUMS prediction, calibrated from ' + PRIOR[ENG].hums.jobs + ' earlier jobs' : (PRIOR[ENG].jobs === 1 ? 'one earlier job' : PRIOR[ENG].jobs + ' earlier jobs')) + ' on engine ' + ENG + '. Very uncertain: confirm with run 2.</div>' : '';
-    oh += '<div class="recn ' + (recOk ? 'good' : 'crit') + '"><div><span class="rl2">Recommended number of screws</span><b>' + rec.n + '</b><span class="rs">' +
+    oh += '<div class="rech ' + (recOk ? 'good' : 'crit') + '"><span class="rl2">Recommended</span><b>' + rec.n + (rec.n === 1 ? ' screw' : ' screws') + '</b><span class="rs">' +
       (recOk ? 'fewest screws below 0.30 · predicted ' : 'none below 0.30 · best ') + fmt(rec.score, 2) + ' IPS</span></div>' +
-      '<div class="pern" role="radiogroup" aria-label="Number of screws in suggestions">' + per.map(function (x) { return '<button type="button" role="radio" aria-checked="' + (x.n === B.selN) + '" data-n="' + x.n + '" class="' + (x.n === rec.n ? 'rec' : '') + '"><span>' + x.n + (x.n === 1 ? ' screw' : ' screws') + (x.n === rec.n ? ' · rec.' : '') + '</span>' + '<strong>' + fmt(x.score, 2) + ' <small>IPS</small></strong></button>'; }).join('') + '</div></div>';
-    oh += '<h3>Suggestions with ' + B.selN + ' screw' + (B.selN === 1 ? '' : 's') + '</h3><div class="opts">';
+      '<div class="pern ' + (recOk ? 'good' : 'crit') + '" role="radiogroup" aria-label="Number of screws in suggestions">' + per.map(function (x) {
+        return '<button type="button" role="radio" aria-checked="' + (x.n === B.selN) + '" data-n="' + x.n + '" class="' + (x.n === rec.n ? 'rec' : '') + '"' + (x.n === rec.n ? ' aria-label="' + x.n + ' screws, recommended"' : '') + '>' +
+          '<span>' + x.n + '<i>' + (x.n === 1 ? ' screw' : ' screws') + '</i></span><strong>' + fmt(x.score, 2) + '</strong></button>'; }).join('') + '</div>';
+    oh += '<div class="sugl">';
     B.opt.top.forEach(function (t, k) {
-      var d = BM.diff(cur, t.setup), worst = t.preds.reduce(function (a, b) { return b.ips > a.ips ? b : a; });
-      oh += '<div class="opt2' + (k === 0 ? ' best' : '') + ' ' + zone(worst.ips) + '"><div class="oh"><span>Suggestion ' + (k + 1) + '</span></div>' +
-        '<div class="ores"><span class="pl">Predicted' + (isPrior ? ' (approx.)' : '') + '</span>' + fmt(worst.ips, 2) + ' <em>IPS</em></div>' +
-        (isPrior ? (function (r) { return '<div class="unc">Range ' + fmt(r[0], 2) + '–' + fmt(r[1], 2) + ' IPS</div>'; })(rng(t.setup)) : '') +
-        '<div class="chips2">' + chips3(t.setup) + '</div>' +
-        '<button type="button" data-apply="' + k + '">Apply</button></div>';
+      var worst = t.preds.reduce(function (a, b) { return b.ips > a.ips ? b : a; });
+      oh += srow({ rk: k + 1, cls: k === 0 ? 'best' : '', setup: t.setup, ips: worst.ips, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(t.setup) : null, apply: k, primary: k === 0 });
     });
-    oh += '<div class="opt2 back ' + zone(B.last.ips) + '"><div class="oh"><span>Keep current (run ' + (B.last.i + 1) + ')</span></div>' +
-      '<div class="ores"><span class="pl">Measured</span>' + fmt(B.last.ips, 2) + ' <em>IPS</em></div>' +
-      '<div class="chips2">' + chips3(B.last.setup) + '</div>' +
-      '<button type="button" data-apply="keep">Apply</button></div>';
+    oh += '<div class="ssub">Go back</div>' +
+      srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, lbl: 'measured', apply: 'keep' });
     if (B.bestClean && B.bestClean.i !== B.last.i) {
-      var bc = B.bestClean, d2 = BM.diff(cur, bc.setup);
-      oh += '<div class="opt2 back ' + zone(bc.ips) + '"><div class="oh"><span>Best clean reading (run ' + (bc.i + 1) + ')</span></div>' +
-        '<div class="ores"><span class="pl">Measured</span>' + fmt(bc.ips, 3) + ' <em>IPS</em></div>' +
-        '<div class="chips2">' + chips3(bc.setup) + '</div>' +
-        '<button type="button" data-apply="back">Apply</button></div>';
+      var bc = B.bestClean;
+      oh += srow({ rk: 'Run ' + (bc.i + 1), cls: 'back', setup: bc.setup, ips: bc.ips, d: 3, lbl: 'best clean', apply: 'back' });
     }
     oh += '</div>';
     $("bOpt").innerHTML = oh;

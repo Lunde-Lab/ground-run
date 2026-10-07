@@ -30,13 +30,13 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.reload();
   const opt = await txt(pg, '#bOpt');
   ok(opt.includes('Run 1 suggestion'), 'Run-1 suggestion banner shown');
-  ok((await pg.$$('#bOpt .opt2:not(.back)')).length >= 1, 'Run-1 suggestions listed');
-  ok(/Range \d\.\d\d–\d\.\d\d IPS/.test(opt), 'Suggestions show a range');
+  ok((await pg.$$('#bOpt .srow:not(.back)')).length >= 1, 'Run-1 suggestions listed');
+  ok(/Range \d\.\d\d–\d\.\d\d/.test(opt), 'Suggestions show a range');
 
   // Above 4.0 IPS -> no suggestions
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); o.runs[0].ips = '4,5'; localStorage.setItem(k, JSON.stringify(o)); });
   await pg.reload();
-  ok((await pg.$$('#bOpt .opt2:not(.back)')).length === 0 && !(await pg.isHidden('#idxAlert')), '> 4.0 IPS blocks suggestions and shows index alert');
+  ok((await pg.$$('#bOpt .srow:not(.back)')).length === 0 && !(await pg.isHidden('#idxAlert')), '> 4.0 IPS blocks suggestions and shows index alert');
 
   // Run 1 with HUMS prediction + PRIOR.hums.use (set by analyze.py when calibrated HUMS beats prior) -> HUMS-based run-1 α
   const fs = require('fs'), os = require('os');

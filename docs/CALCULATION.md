@@ -80,7 +80,7 @@ c = Σ conj(u)·ΔV / Σ |u|²        (c = 1∠0° → HUMS right on average)
 
 and compares, leave-one-job-out on the same steps: HUMS as-is, prior α, and calibrated HUMS `V_k + c·u_k`. It writes `PRIOR[engine].hums = {cMag, cAng, jobs, use}`.
 
-`use` is true only with ≥ 3 jobs with HUMS data **and** calibrated HUMS ≥ 10 % better (RMS) than prior α. Then run 1 uses `α = c · α_HUMS` (α_HUMS from the HUMS prediction on run 1, needs the screws entered) instead of the pooled prior; the range stays `dAng`/`dMag`. This helps only if HUMS's coefficient differs per aircraft and tracks the true α; if HUMS uses the same coefficient everywhere, `c·α_HUMS` equals the prior and `use` stays false.
+`use` is true only with ≥ 3 jobs with HUMS data **and** calibrated HUMS ≥ 10 % better (RMS) than prior α. Then run 1 uses `α = c · α_HUMS` (α_HUMS from the HUMS prediction on run 1, needs the screws entered) instead of the pooled prior; the range stays `dAng`/`dMag`. This helps only if HUMS's coefficient differs per aircraft and tracks the true α; if HUMS uses the same coefficient everywhere, `c·α_HUMS` equals the prior and `use` stays false. `analyze.py` also prints α_HUMS per job: same within ~10° → one coefficient for all aircraft.
 
 ### Current data (Oct 2026)
 

@@ -128,6 +128,13 @@ def hums_report(e, lst):
                 line += f"  prior {eP[-1]:.2f}  cal. HUMS {eC[-1]:.2f}"
             print(line)
     c = calib([s for _, hs in hj for s in hs])
+    # Same HUMS coefficient on every aircraft? Then alpha_HUMS is the same in every job (up to read-out rounding)
+    ah = [sum(dW.conjugate() * u for _, dW, u, _ in hs) / sum(abs(dW) ** 2 for _, dW, _, _ in hs) for _, hs in hj]
+    am = sum(ah) / len(ah)
+    sp = max(abs(math.degrees(cmath.phase(x / am))) for x in ah)
+    print(f"   alpha_HUMS per job: {', '.join(fmt(x) for x in ah)}  (max {sp:.0f}° from mean)"
+          + ("" if len(ah) < 2 else "  -> looks like one coefficient for all aircraft" if sp < 10
+             else "  -> differs between jobs/aircraft"))
     print(f"   RMS error HUMS {rms(eH):.2f} IPS ({len(eH)} steps)   calibration c = {fmt(c)}"
           "  (c = 1∠0° means HUMS is right on average)")
     use = False

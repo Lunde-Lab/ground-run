@@ -879,7 +879,9 @@ var BM = (function () {
     res.recOk = !!rn;
     if (!rn) rn = per.reduce(function (a, b) { return b.score < a.score ? b : a; });
     res.rec = rn;
-    res.selN = (SELN && res.opt.byN[SELN] && res.opt.byN[SELN].length) ? SELN : rn.n;
+    // Vanlig praksis er maks 3 skruer: 4–6 vises bare når 1–3 ikke når 0.30
+    res.per = per.filter(function (x) { return x.n <= 3 || rn.n > 3; });
+    res.selN = (SELN && res.per.some(function (x) { return x.n === SELN; })) ? SELN : rn.n;
     res.opt.top = res.opt.byN[res.selN];
     res.bestClean = inc.reduce(function (b, p) { return !b || p.ips < b.ips ? p : b; }, null);
     if (res.humsNext) { var pm = res.predStd; res.humsDist = BM.abs(BM.sub(BM.fromMeas(res.humsNext.ips, res.humsNext.deg), BM.fromMeas(pm.ips, pm.deg))); }
@@ -1116,7 +1118,7 @@ var BM = (function () {
       return;
     }
     // Optimering
-    var cur = B.last.setup, per = B.opt.perN.filter(function (x) { return x; }), rec = B.rec, recOk = B.recOk;
+    var cur = B.last.setup, per = B.per, rec = B.rec, recOk = B.recOk;
     var isPrior = B.alphaSrc === "prior";
     function rng(setup) {
       var dW = BM.sub(BM.W(setup), B.last.W), lo = 99, hi = 0;

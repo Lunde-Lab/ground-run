@@ -43,6 +43,7 @@ A run not power cycled may read as an average of the previous and the true level
 - Prediction for a full new setup `W'`: `V_last + α·(W' − W_last)`, from the **last reading**, also when that run is not marked Use (Use only controls the α estimate). Score = predicted IPS.
 - Exhaustive search of all setups with 1–6 screws (12 positions × Al/Ti/St, max one per position); top 3 per screw count.
 - Recommended count = fewest screws with score ≤ 0.30; otherwise the best score.
+- The screw-count picker shows only 1–3 screws (normal practice is max 3). 4–6 are shown only when 1–3 cannot reach 0.30, i.e. when the recommendation itself is 4+.
 - Also shown: *Keep current* and *Best clean reading* (setup of the lowest used run).
 
 Guards:

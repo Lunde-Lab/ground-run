@@ -1,5 +1,5 @@
 // Ground Run – offline cache. Viser lagret versjon straks og henter ny i bakgrunnen.
-const VERSION = "20261007190513";
+const VERSION = "20261007191627";
 const CACHE = "ground-run-" + VERSION;
 const FILES = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 

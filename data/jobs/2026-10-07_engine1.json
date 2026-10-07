@@ -1,0 +1,11 @@
+{
+  "engine": 1,
+  "date": "2026-10-07",
+  "note": "No weights before run 1. Old weights removed before run 3.",
+  "start": [],
+  "runs": [
+    { "ips": 2.105, "deg": 60,  "after": ["1 St", "6 Al", "10 Ti"] },
+    { "ips": 0.386, "deg": 235, "after": ["3 St", "9 Al", "10 St"] },
+    { "ips": 0.285, "deg": 322, "after": [], "note": "within target" }
+  ]
+}

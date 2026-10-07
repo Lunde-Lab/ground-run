@@ -1,0 +1,15 @@
+{
+  "engine": 2,
+  "date": "2026-10",
+  "note": "HSS #2 job sheet. Runs 5 and 6 were flagged as not power cycled in the original spec (reading may be an average) – excluded.",
+  "start": [],
+  "runs": [
+    { "ips": 2.495, "deg": 153, "after": ["4 Ti", "7 Al", "8 St"] },
+    { "ips": 0.922, "deg": 295, "after": ["2 Ti", "6 St", "9 Ti"] },
+    { "ips": 0.314, "deg": 279, "after": ["4 Ti", "7 Al", "8 Al"] },
+    { "ips": 0.982, "deg": 37,  "after": ["2 Al", "4 Al", "8 St"], "note": "IPS hard to read on sheet" },
+    { "ips": 0.338, "deg": 97,  "after": ["6 St", "9 Al", "12 Ti"], "use": false },
+    { "ips": 0.329, "deg": 307, "after": ["1 Al", "6 Ti", "8 Al"], "use": false, "note": "hard to read on sheet" },
+    { "ips": 0.140, "deg": 248, "after": [], "note": "within target" }
+  ]
+}

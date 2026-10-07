@@ -324,9 +324,7 @@ th.run .xtag { display: block; font-family: var(--font-ui); font-size: .58rem; f
 table.btab { min-width: 0; table-layout: fixed; }
 .btab th, .btab td { height: 50px; font-size: .9rem; }
 .btab thead th { height: auto; padding: 6px 4px; line-height: 1.2; font-size: .7rem; }
-.btab td.rf { font-family: var(--font-data); font-weight: 600; }
 .btab td.note2 { font-size: .78rem; text-align: left; padding: 4px 8px; line-height: 1.3; }
-.btab tr.excl td.rf { color: var(--muted); }
 .btab .cell { height: 50px; min-height: 50px; font-size: .9rem; }
 .tog { min-height: 40px; height: 40px; padding: 0 8px; font-size: .85rem; border-radius: 8px; width: calc(100% - 8px); }
 .tog.no { background: rgba(var(--crit-rgb), 0.12); border-color: rgba(var(--crit-rgb), 0.4); }
@@ -853,7 +851,7 @@ var BM = (function () {
     if (m) {
       res.loo = BM.loo(inc);
       pts.forEach(function (p, k) {
-        var T = BM.model(m, p.W); p.T = T; p.resid = BM.abs(BM.sub(T, p.V));
+        var T = BM.model(m, p.W); p.T = T;
         if (!p.cyc && k > 0) {
           var Sv = BM.mul(BM.add(pts[k - 1].V, T), [0.5, 0]);
           p.avgWarn = BM.abs(BM.sub(Sv, p.V)) < BM.abs(BM.sub(T, p.V));
@@ -1082,7 +1080,7 @@ var BM = (function () {
     var B = A.beta || { pts: [] };
     // Tabell per kjøring
     var tb = $("bTable");
-    var h = '<thead><tr><th>Run</th><th>Use in fit</th><th>Residual IPS</th><th>HUMS pred. IPS</th><th>HUMS pred. °</th></tr></thead><tbody>';
+    var h = '<thead><tr><th>Run</th><th>Use in fit</th><th>HUMS pred. IPS</th><th>HUMS pred. °</th></tr></thead><tbody>';
     S.runs.forEach(function (r, i) {
       var p = B.byI[i], ex = p && !p.use, note = "";
       if (p && p.avgWarn) note = '<span class="avg">The reading looks like an average – actual level may be approx. ' + fmt(p.Tm.ips, 2) + ' ips</span>';
@@ -1090,7 +1088,6 @@ var BM = (function () {
       if (p && B.last && p.i === B.last.i && B.humsDist !== undefined) note += (note ? "<br>" : "") + "HUMS and Next are " + fmt(B.humsDist, 2) + " IPS apart";
       h += '<tr class="' + (ex ? "excl" : "") + '" data-i="' + i + '"><th class="run" scope="row">' + (i + 1) + '</th>' +
         '<td><button type="button" class="tog' + (useOf(r) ? ' on' : '') + '" data-act="use">' + (useOf(r) ? '✓' : '–') + '</button></td>' +
-        '<td class="rf">' + (p && p.resid !== undefined ? fmt(p.resid, 2) : '–') + '</td>' +
         '<td><button type="button" class="cell num' + (r.hp ? '' : ' empty') + '" data-act="hp">' + (r.hp || '–') + '</button></td>' +
         '<td><button type="button" class="cell num' + (r.hd ? '' : ' empty') + '" data-act="hd">' + (r.hd || '–') + '</button></td>' +
         '</tr>';

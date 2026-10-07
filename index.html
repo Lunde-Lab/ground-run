@@ -870,8 +870,11 @@ var BM = (function () {
     var rows = [], sH = 0, sT = 0, nT = 0, eSum = [0, 0];
     hl.forEach(function (h) {
       var nx = pts[h.k + 1]; if (!nx) return;
-      var row = { k: h.p, next: nx, P: BM.toMeas(h.P), meas: { ips: nx.ips, deg: nx.deg } };
-      var eH = BM.sub(nx.V, h.P); row.errH = BM.abs(eH); eSum = BM.add(eSum, eH); sH += row.errH * row.errH;
+      // HUMS-prediksjonen gjelder HUMS sine anbefalte vekter. Satt på noe annet → skaler med α_HUMS til vektene som faktisk ble satt på
+      var dWf = BM.sub(nx.W, h.p.W), Pf = h.P, adj = false;
+      if (h.a && BM.abs(BM.sub(BM.add(h.p.V, BM.mul(h.a, dWf)), h.P)) > 0.005) { Pf = BM.add(h.p.V, BM.mul(h.a, dWf)); adj = true; }
+      var row = { k: h.p, next: nx, P: BM.toMeas(Pf), adj: adj, meas: { ips: nx.ips, deg: nx.deg } };
+      var eH = BM.sub(nx.V, Pf); row.errH = BM.abs(eH); eSum = BM.add(eSum, eH); sH += row.errH * row.errH;
       var upto = pts.filter(function (q) { return q.i <= h.p.i; }), mk = BM.dfit(upto) || BM.fit(upto.filter(function (q) { return q.use; }));
       if (mk) {
         var tp = BM.add(h.p.V, BM.mul(mk.alpha, BM.sub(nx.W, h.p.W)));
@@ -1200,10 +1203,11 @@ var BM = (function () {
     ac.hidden = false;
     var t = '<h3>Prediction accuracy</h3><div class="tablewrap"><table class="acc"><thead><tr><th>HUMS pred. on run</th><th>Measured run</th><th>HUMS predicted</th><th>Tool predicted</th><th>Measured</th><th>Error HUMS</th><th>Error tool</th><th>RMS HUMS</th><th>RMS tool</th></tr></thead><tbody>';
     B.acc.forEach(function (r) {
-      t += '<tr><td>' + (r.k.i + 1) + '</td><td>' + (r.next.i + 1) + '</td><td>' + mp(r.P) + '</td><td>' + (r.T ? mp(r.T) : '–') + '</td><td>' + mp(r.meas) + '</td>' +
+      t += '<tr><td>' + (r.k.i + 1) + '</td><td>' + (r.next.i + 1) + '</td><td>' + mp(r.P) + (r.adj ? '*' : '') + '</td><td>' + (r.T ? mp(r.T) : '–') + '</td><td>' + mp(r.meas) + '</td>' +
         '<td>' + fmt(r.errH, 2) + '</td><td>' + (r.errT !== undefined ? fmt(r.errT, 2) : '–') + '</td><td>' + fmt(r.rmsH, 2) + '</td><td>' + (r.rmsT !== undefined ? fmt(r.rmsT, 2) : '–') + '</td></tr>';
     });
     t += '</tbody></table></div>';
+    if (B.acc.some(function (r) { return r.adj; })) t += '<p class="fine2">* Fitted weights differ from HUMS recommended – HUMS prediction scaled to the weights fitted.</p>';
     var me = BM.toMeas(B.meanErrH);
     t += '<div class="accsum"><span>RMS HUMS <b>' + fmt(B.rmsH, 2) + '</b></span><span>RMS tool <b>' + (B.rmsT !== null ? fmt(B.rmsT, 2) : '–') + '</b></span>' +
       '<span>Mean error vector HUMS <b>' + fmt(me.ips, 2) + ' / ' + fdeg(me.deg) + '°</b></span></div>';

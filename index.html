@@ -173,6 +173,13 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .runleg span i { font-style: normal; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: var(--c); color: var(--panel); font-weight: 700; font-size: .75rem; display: inline-grid; place-items: center; }
 .runleg span.last { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); }
 .runleg span.excl-pt { opacity: .6; }
+.runleg span { min-height: 36px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.runleg span.sel { background: rgba(var(--cr), 0.18); border-color: var(--c); box-shadow: 0 0 0 2px var(--c); opacity: 1; }
+.runleg.hl span:not(.sel) { opacity: .55; }
+.runleg span:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+g.fade { opacity: .28; }
+.halo { fill: rgba(var(--cr), 0.22); stroke: var(--c); stroke-width: 2; stroke-dasharray: 3 3; pointer-events: none; }
+.dot.sel { stroke: var(--fg); stroke-width: 3; }
 .legend:empty { display: none; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 4px 8px 6px; font-size: .85rem; color: var(--muted); }
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
@@ -980,7 +987,9 @@ var BM = (function () {
   }
   setTimeout(function () { svg.classList.remove("intro"); }, 1400);
 
+  var HL = null;
   function drawChart() {
+    if (HL !== null && !(A.pts || []).some(function (p) { return p.i === HL; })) HL = null;
     var all = A.pts || [], pts = V.last ? all.slice(-1) : all;
     var top = all.reduce(function (m, p) { return Math.max(m, p.ips); }, 0);
     var max = V.scale === "1" ? 1 : V.scale === "2" ? 2 : (top > 1 ? 2 : 1);
@@ -991,9 +1000,10 @@ var BM = (function () {
     if (P.length > 1) el("polyline", { points: P.map(function (q) { return q[0] + "," + q[1]; }).join(" "), "class": "path" }, layer);
     pts.forEach(function (p, k) {
       var bp = BETA && A.beta && A.beta.byI[p.i], ex = bp && !bp.use;
-      var q = P[k], last = (k === pts.length - 1), g = el("g", { "class": ex ? "excl-pt" : zone(p.ips) }, layer);
-      el("line", { x1: C, y1: C, x2: q[0], y2: q[1], "class": "vec" + (last ? "" : " dim") }, g);
-      el("circle", { cx: q[0], cy: q[1], r: last ? 8 : 6, "class": "dot" }, g);
+      var sel = HL === p.i, q = P[k], last = (k === pts.length - 1), g = el("g", { "class": (ex ? "excl-pt" : zone(p.ips)) + (HL !== null && !sel ? " fade" : "") }, layer);
+      el("line", { x1: C, y1: C, x2: q[0], y2: q[1], "class": "vec" + (last || sel ? "" : " dim") }, g);
+      if (sel) el("circle", { cx: q[0], cy: q[1], r: 17, "class": "halo" }, g);
+      el("circle", { cx: q[0], cy: q[1], r: sel ? 10 : last ? 8 : 6, "class": "dot" + (sel ? " sel" : "") }, g);
       var a = RTB.toScreen(p.deg), lpp = pt(a, Math.min(max, p.ips) * PER + 18);
       el("text", { x: lpp[0], y: lpp[1] + 4, "text-anchor": "middle", "class": "ptl" }, g, p.ips > max ? (p.i + 1) + " (" + fmt(p.ips, 2) + ")" : p.i + 1);
     });
@@ -1433,12 +1443,21 @@ var BM = (function () {
   // ---------- Oppdatering ----------
   function drawRunLeg() {
     var pts = A.pts || [], el3 = $("runLeg");
+    el3.classList.toggle("hl", HL !== null);
     el3.innerHTML = pts.map(function (p, k) {
       var bp = BETA && A.beta && A.beta.byI[p.i], ex = bp && !bp.use;
-      return '<span class="' + (ex ? 'excl-pt' : zone(p.ips)) + (k === pts.length - 1 ? ' last' : '') + '"><i>' + (p.i + 1) + '</i>' +
+      return '<span class="' + (ex ? 'excl-pt' : zone(p.ips)) + (k === pts.length - 1 ? ' last' : '') + (HL === p.i ? ' sel' : '') + '" role="button" tabindex="0" aria-pressed="' + (HL === p.i) + '" data-i="' + p.i + '"><i>' + (p.i + 1) + '</i>' +
         String(S.runs[p.i].ips).replace(",", ".") + ' / ' + fdeg(p.deg) + '°' + (ex ? ' · not used' : '') + '</span>';
     }).join('');
   }
+  function legToggle(e) {
+    var b = e.target.closest("span[data-i]"); if (!b) return;
+    if (e.type === "keydown") { if (e.key !== "Enter" && e.key !== " ") return; e.preventDefault(); }
+    var i = +b.getAttribute("data-i"); HL = HL === i ? null : i;
+    drawChart(); drawRunLeg();
+  }
+  $("runLeg").addEventListener("click", legToggle);
+  $("runLeg").addEventListener("keydown", legToggle);
   function drawIdx() {
     var over = (A.pts || []).filter(function (p) { return p.ips > 4.0; }), el2 = $("idxAlert");
     if (!over.length) { el2.hidden = true; return; }
@@ -1614,7 +1633,7 @@ var BM = (function () {
     var n = +b.getAttribute("data-eng"); if (n === VIEW) return;
     closePicker(); VIEW = n;
     try { localStorage.setItem("vibrasjonsdiagram-tab", String(VIEW)); } catch (x) {}
-    if (n <= 2) { ENG = n; S = ENGINES[ENG]; SELN = null; refresh(); }
+    if (n <= 2) { ENG = n; S = ENGINES[ENG]; SELN = null; HL = null; refresh(); }
     showTabs();
   });
   showBeta();

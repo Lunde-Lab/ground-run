@@ -1047,6 +1047,8 @@ var BM = (function () {
     var src = null, srcLbl = "";
     for (var ri = S.runs.length - 1; ri >= 0; ri--) if (countOf(S.runs[ri].pos)) { src = S.runs[ri].pos; srcLbl = "fitted after run " + (ri + 1); break; }
     if (!src && countOf(S.start)) { src = S.start; srcLbl = "row 0 (start)"; }
+    // Valgt kjøring: vektene som satt på under den kjøringen = rad (i) i tabellen (rad 0 = start)
+    if (HL !== null) src = HL === 0 ? S.start : S.runs[HL - 1].pos;
     if (src) setupOf(src).forEach(function (w) {
       var a5 = HOURS[w[0]], qb = pt(a5, R + 56), qi = pt(a5, R - 16), gw = el("g", { "class": "scr " + w[1] }, layer);
       el("circle", { cx: qb[0], cy: qb[1], r: 14, "class": "scr-b" }, gw);

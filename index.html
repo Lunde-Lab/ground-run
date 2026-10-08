@@ -285,6 +285,8 @@ table.acc { min-width: 600px; table-layout: fixed; }
 .export { display: flex; flex-direction: column; align-items: center; gap: 8px; padding-block: 8px 24px; }
 .export button { min-height: 48px; padding: 10px 22px; }
 .export .btns { justify-content: center; }
+.export .btns.sub { margin-top: 10px; }
+.export button.small { flex: 0 0 auto; min-height: 44px; padding: 6px 16px; font-size: .85rem; opacity: .8; }
 .exf { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 .exf input { -webkit-appearance: none; appearance: none; display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.1rem; letter-spacing: 0; color: var(--fg); min-height: 50px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); text-align: left; }
 .exf input#exTail { text-transform: uppercase; font-family: var(--font-data); }
@@ -533,7 +535,9 @@ table.btab { min-width: 0; table-layout: fixed; }
   </div>
 
   <div class="export">
-    <div class="btns"><button type="button" id="newJob">New job</button><button type="button" id="loadEx">Load example</button><button type="button" id="exportBtn">Export data (JSON)</button></div>
+    <div class="btns"><button type="button" id="newJob">New job</button><button type="button" id="exportBtn">Export data (JSON)</button><button type="button" id="importBtn">Import data (JSON)</button></div>
+    <div class="btns sub"><button type="button" id="loadEx" class="small">Example</button><button type="button" id="themeBtn" class="small">Light mode</button></div>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
     <p class="fine2" id="exportMsg" hidden></p>
   </div>
 </div>
@@ -549,7 +553,7 @@ table.btab { min-width: 0; table-layout: fixed; }
 <div class="modal" id="exModal" role="dialog" aria-modal="true" aria-labelledby="exTitle" hidden>
   <div class="sheet">
     <h3 id="exTitle" style="margin:0;font-size:1.15rem;font-weight:600">Export data</h3>
-    <label class="exf">Tail number<input id="exTail" type="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="LN-…" enterkeyhint="done"></label>
+    <label class="exf">Tail number<input id="exTail" type="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="3" placeholder="ABC" enterkeyhint="done"></label>
     <label class="exf">Date<input id="exDate" type="date"></label>
     <p class="ex-err" id="exErr" hidden></p>
     <div class="btns end"><button type="button" id="exCancel">Cancel</button><button type="button" class="primary" id="exGo">Export</button></div>
@@ -1643,7 +1647,7 @@ var BM = (function () {
   $("exGo").addEventListener("click", function () {
     var tail = exTail.value.trim().toUpperCase(), date = exDate.value;
     exTail.classList.toggle("bad", !tail); exDate.classList.toggle("bad", !date);
-    if (!tail) { exErr("Enter the tail number."); exTail.focus(); return; }
+    if (!/^[A-Z]{3}$/.test(tail)) { exTail.classList.add("bad"); exErr("Tail number must be three letters."); exTail.focus(); return; }
     if (!date) { exErr("Select a date."); return; }
     JOB = { tail: tail, date: date }; saveJob(); exClose();
     doExport(tail, date);
@@ -1671,6 +1675,55 @@ var BM = (function () {
       } catch (x) { exMsg("Export is not available here."); }
     });
   }
+
+  exTail.addEventListener("input", function () { exTail.value = exTail.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 3); });
+
+  // ---------- Import ----------
+  var impFile = $("importFile"), impData = null;
+  $("importBtn").addEventListener("click", function () { closePicker(); exMsg(""); impFile.value = ""; impFile.click(); });
+  impFile.addEventListener("change", function () {
+    var f = impFile.files && impFile.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var d = null;
+      try { d = JSON.parse(rd.result); } catch (e) {}
+      if (!d || typeof d !== "object" || (!d.engine1 && !d.engine2 && !d.mrBalance && !d.trBalance)) { exMsg("Not a Ground Run export."); return; }
+      impData = d;
+      ask("Import data?", "Replaces all runs in Engine 1, Engine 2, MR Balance and TR Balance with the file's data" + (d.tail ? " (" + d.tail + (d.date ? ", " + d.date : "") + ")" : "") + ".", "Import", function () {
+        try {
+          [1, 2].forEach(function (n) {
+            var o = impData["engine" + n];
+            ENGINES[n] = tidy(o && Array.isArray(o.runs) && o.runs.length ? o : blank());
+            localStorage.setItem(KEYS[n], JSON.stringify(ENGINES[n]));
+          });
+          S = ENGINES[ENG]; SELN = null;
+          M = impData.mrBalance && Array.isArray(impData.mrBalance.adj) ? impData.mrBalance : blankMR(); saveMR(); buildMR();
+          T = impData.trBalance && Array.isArray(impData.trBalance.adj) ? impData.trBalance : blankTR(); saveTR(); buildTR();
+          JOB = { tail: String(impData.tail || "").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 3), date: impData.date || "" }; saveJob();
+          exMsg("Data imported."); refresh();
+        } catch (e) { exMsg("Import failed."); }
+      });
+    };
+    rd.onerror = function () { exMsg("Could not read the file."); };
+    rd.readAsText(f);
+  });
+
+  // ---------- Light / dark ----------
+  var THEMEKEY = "vibrasjonsdiagram-theme", themeBtn = $("themeBtn");
+  function isDark() {
+    var t = document.documentElement.getAttribute("data-theme");
+    return t ? t === "dark" : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }
+  function themeLabel() { themeBtn.textContent = isDark() ? "Light mode" : "Dark mode"; }
+  try { var th = localStorage.getItem(THEMEKEY); if (th === "light" || th === "dark") document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+  themeLabel();
+  themeBtn.addEventListener("click", function () {
+    var t = isDark() ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem(THEMEKEY, t); } catch (e) {}
+    var mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.setAttribute("content", t === "dark" ? "#080d11" : "#e9eef1");
+    themeLabel();
+  });
 
   $("loadEx").addEventListener("click", function () {
     ask("Load the Engine " + ENG + " example?", "A real Engine " + ENG + " job (" + (ENG === 2 ? "7" : "3") + " runs) replaces the runs in Engine " + ENG + ".", "Load example", function () {

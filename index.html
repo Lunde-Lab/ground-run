@@ -305,7 +305,7 @@ table.acc { min-width: 600px; table-layout: fixed; }
 #runsT { display: flex; align-items: center; gap: 10px; }
 .eng-tag { display: inline-flex; align-items: center; min-height: 32px; padding: 4px 12px; border-radius: 8px; border: 1.5px solid var(--accent); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); font-size: .95rem; font-weight: 700; letter-spacing: .04em; text-transform: none; white-space: nowrap; }
 .eng-tag.e2 { border-color: var(--eng2); background: rgba(var(--eng2-rgb), 0.14); color: var(--eng2); }
-.beta-btn { min-height: 44px; padding: 6px 14px; border-radius: 999px; font-size: .85rem; font-weight: 700; letter-spacing: .02em; }
+.beta-btn { min-height: 44px; padding: 6px 14px; border-radius: 10px; font-size: .85rem; font-weight: 700; letter-spacing: .02em; }
 .beta-btn[aria-pressed="true"] { background: var(--warn); border-color: var(--warn); color: var(--panel); }
 tr.excl > td, tr.excl > th { opacity: .45; }
 th.run .xtag { display: block; font-family: var(--font-ui); font-size: .58rem; font-weight: 600; line-height: 1.1; color: var(--muted); padding-inline: 2px; }
@@ -332,12 +332,12 @@ table.btab { min-width: 0; table-layout: fixed; }
 .btab .cell.hwc { height: auto; min-height: 50px; flex-wrap: wrap; gap: 3px; padding: 4px; }
 .mw { font-family: var(--font-data); font-size: .76rem; font-weight: 700; padding: 1px 5px; border-radius: 6px; background: rgba(var(--cr), 0.16); border: 1px solid rgba(var(--cr), 0.45); white-space: nowrap; }
 .hw-pos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
-.hw-pos button { min-height: 54px; padding: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-data); font-weight: 700; font-size: 1.05rem; line-height: 1.1; }
-.hw-pos button small { font-size: .7rem; font-weight: 700; color: var(--c, var(--muted)); min-height: .8rem; }
+.hw-pos button { position: relative; min-height: 54px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-data); font-weight: 700; font-size: 1.05rem; line-height: 1.1; }
+.hw-pos button small { position: absolute; left: 0; right: 0; bottom: 3px; text-align: center; font-size: .7rem; font-weight: 700; color: var(--c, var(--muted)); min-height: .8rem; }
 .hw-pos button.Al, .hw-pos button.Ti, .hw-pos button.St { background: rgba(var(--cr), 0.16); border-color: rgba(var(--cr), 0.45); }
 .hw-pos button[aria-checked="true"] { box-shadow: 0 0 0 3px var(--accent); border-color: var(--accent); }
 .hw-w { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.hw-w button { min-height: 54px; font-family: var(--font-data); font-size: 1.05rem; font-weight: 700; padding: 0 4px; }
+.hw-w button { display: flex; align-items: center; justify-content: center; min-height: 54px; font-family: var(--font-data); font-size: 1.05rem; font-weight: 700; padding: 0 4px; }
 .hw-w button.Al, .hw-w button.Ti, .hw-w button.St { background: rgba(var(--cr), 0.16); border-color: rgba(var(--cr), 0.45); }
 .hw-w button.on { background: var(--c, var(--accent)); border-color: var(--c, var(--accent)); color: var(--panel); }
 .hw-w button[data-w=""] { font-family: var(--font-ui); font-weight: 500; font-size: .95rem; color: var(--muted); }
@@ -523,7 +523,7 @@ table.btab { min-width: 0; table-layout: fixed; }
 
   <section class="card beta" id="betaView" aria-labelledby="betaT" hidden>
     <div class="beta-top">
-      <h2 id="betaT">Beta · HSS balance (AMM 18-12-02)<span class="unv-badge">Not verified</span></h2>
+      <h2 id="betaT">Beta · HSS balance</h2>
     </div>
     <div class="disclaimer"><b>Not verified.</b> For use as a support tool only.</div>
     <div class="amode" id="bMode" hidden></div>

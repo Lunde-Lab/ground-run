@@ -1449,7 +1449,7 @@ var BM = (function () {
     var pts = A.pts || [], el3 = $("runLeg");
     el3.classList.toggle("hl", HL !== null);
     var vis = V.last ? pts.slice(-1) : pts;
-    el3.innerHTML = (pts.length > 1 ? '<button type="button" class="hidebtn" aria-pressed="' + V.last + '" data-hide="1">' + (V.last ? 'Show previous runs' : 'Hide previous runs') + '</button>' : '') + vis.map(function (p) {
+    el3.innerHTML = (pts.length > 1 ? '<button type="button" class="hidebtn" aria-pressed="' + V.last + '" data-hide="1">' + (V.last ? 'Show runs' : 'Hide runs') + '</button>' : '') + vis.map(function (p) {
       var k = pts.indexOf(p);
       var bp = BETA && A.beta && A.beta.byI[p.i], ex = bp && !bp.use;
       return '<span class="' + (ex ? 'excl-pt' : zone(p.ips)) + (k === pts.length - 1 ? ' last' : '') + (HL === p.i ? ' sel' : '') + '" role="button" tabindex="0" aria-pressed="' + (HL === p.i) + '" data-i="' + p.i + '"><i>' + (p.i + 1) + '</i>' +

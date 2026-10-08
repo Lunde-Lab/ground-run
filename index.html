@@ -103,6 +103,9 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.01em; margin: 0; tex
 .card { background: linear-gradient(160deg, var(--panel), var(--panel2)); border: 1px solid var(--line); border-radius: 14px; }
 .face { padding: 10px; }
 svg { display: block; width: 100%; height: auto; max-width: 100%; }
+#chart { touch-action: pan-y; }
+#zoomReset { position: absolute; top: 14px; right: 14px; min-height: 44px; padding: 8px 14px; font-size: .9rem; }
+#zoomReset[hidden] { display: none; }
 svg text { font-family: var(--font-data); fill: var(--fg); }
 
 .ring { fill: none; stroke: var(--grid); stroke-width: 1; }
@@ -942,7 +945,45 @@ var BM = (function () {
   // ---------- Diagram ----------
   var V = { scale: "2", clock: true, deg: true, vec: true, last: false };
   function saveV() { try { localStorage.setItem("vibrasjonsdiagram-view", JSON.stringify(V)); } catch (e) {} }
-  var gStatic = el("g", {}), layer = el("g", {}), curMax = 0, curSig = "";
+  var gZoom = el("g", {}), gStatic = el("g", {}, gZoom), layer = el("g", {}, gZoom), curMax = 0, curSig = "";
+  // Zoom/pan kun for diagrammet (pinch, dra, dobbelttrykk = nullstill). Siden zoomes ikke.
+  (function () {
+    var Z = { k: 1, x: 0, y: 0 }, W = 700, MAXK = 5, g0 = null, last1 = null, lastTap = 0;
+    var card = svg.parentNode, rb = document.createElement("button");
+    rb.type = "button"; rb.id = "zoomReset"; rb.textContent = "Reset zoom"; rb.hidden = true; card.style.position = "relative"; card.insertBefore(rb, svg.nextSibling);
+    function apply() {
+      Z.k = Math.max(1, Math.min(MAXK, Z.k));
+      Z.x = Math.max(W * (1 - Z.k), Math.min(0, Z.x)); Z.y = Math.max(W * (1 - Z.k), Math.min(0, Z.y));
+      gZoom.setAttribute("transform", Z.k === 1 ? "" : "translate(" + Z.x.toFixed(2) + "," + Z.y.toFixed(2) + ") scale(" + Z.k.toFixed(3) + ")");
+      rb.hidden = Z.k === 1;
+    }
+    function reset() { Z.k = 1; Z.x = 0; Z.y = 0; apply(); }
+    function toBox(cx, cy) { var r = svg.getBoundingClientRect(); return [(cx - r.left) * W / r.width, (cy - r.top) * W / r.height]; }
+    function zoomAt(p, k2) { k2 = Math.max(1, Math.min(MAXK, k2)); Z.x = p[0] - (p[0] - Z.x) * k2 / Z.k; Z.y = p[1] - (p[1] - Z.y) * k2 / Z.k; Z.k = k2; apply(); }
+    function two(t) { var a = toBox(t[0].clientX, t[0].clientY), b = toBox(t[1].clientX, t[1].clientY); return { c: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], d: Math.hypot(a[0] - b[0], a[1] - b[1]) }; }
+    svg.addEventListener("touchstart", function (e) {
+      if (e.touches.length === 2) { var m = two(e.touches); g0 = { d: m.d, k: Z.k, c: m.c, x: Z.x, y: Z.y }; last1 = null; e.preventDefault(); }
+      else if (e.touches.length === 1) {
+        g0 = null; last1 = toBox(e.touches[0].clientX, e.touches[0].clientY);
+        var now = Date.now(); if (now - lastTap < 300) { reset(); e.preventDefault(); } lastTap = now;
+      }
+    }, { passive: false });
+    svg.addEventListener("touchmove", function (e) {
+      if (e.touches.length === 2 && g0) {
+        var m = two(e.touches), k2 = Math.max(1, Math.min(MAXK, g0.k * m.d / g0.d));
+        Z.k = k2; Z.x = m.c[0] - (g0.c[0] - g0.x) * k2 / g0.k; Z.y = m.c[1] - (g0.c[1] - g0.y) * k2 / g0.k; apply(); e.preventDefault();
+      } else if (e.touches.length === 1 && last1 && Z.k > 1) {
+        var p = toBox(e.touches[0].clientX, e.touches[0].clientY); Z.x += p[0] - last1[0]; Z.y += p[1] - last1[1]; last1 = p; apply(); e.preventDefault();
+      }
+    }, { passive: false });
+    svg.addEventListener("touchend", function (e) {
+      if (e.touches.length < 2) g0 = null;
+      last1 = e.touches.length === 1 ? toBox(e.touches[0].clientX, e.touches[0].clientY) : null;
+    });
+    svg.addEventListener("wheel", function (e) { e.preventDefault(); zoomAt(toBox(e.clientX, e.clientY), Z.k * Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+    svg.addEventListener("dblclick", reset);
+    rb.addEventListener("click", reset);
+  })();
   function drawStatic(max) {
     curMax = max; PER = R / max;
     while (gStatic.firstChild) gStatic.removeChild(gStatic.firstChild);

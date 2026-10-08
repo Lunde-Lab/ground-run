@@ -505,7 +505,7 @@ table.btab { min-width: 0; table-layout: fixed; }
 
   <section class="card runs" aria-labelledby="runsT">
     <div class="runs-head">
-      <div class="rh-l"><h2 id="runsT">Runs <span class="eng-tag" id="engTag">Engine 1</span></h2></div>
+      <div class="rh-l"><h2 id="runsT"><span class="eng-tag" id="engTag">Engine 1 Runs</span></h2></div>
       <div class="btns">
         <button class="primary" id="addRun" type="button">+ Add run</button>
         <button id="delRun" type="button">Remove last</button>
@@ -1476,7 +1476,7 @@ var BM = (function () {
       (nums.length > 1 ? 'Runs ' : 'Run ') + join(nums) + ' measured ' + join(vals) + ' IPS, which is above the 4.0 IPS limit. ' +
       'Index the shaft per AMM 18-12-02 and take a new reading before fitting any weights.</div>';
   }
-  function refresh() { $("engTag").textContent = "Engine " + ENG; $("engTag").className = "eng-tag" + (ENG === 2 ? " e2" : ""); analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); if (BETA) drawBeta(); }
+  function refresh() { $("engTag").textContent = "Engine " + ENG + " Runs"; $("delRun").textContent = "Remove run " + S.runs.length; $("engTag").className = "eng-tag" + (ENG === 2 ? " e2" : ""); analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); if (BETA) drawBeta(); }
   // ---------- MR Ground Track & Balance ----------
   var MRKEY = "vibrasjonsdiagram-mrtb";
   var BLADES = [["Blue", "var(--b-blue)"], ["Red", "var(--b-red)"], ["Black", "var(--b-black)"], ["Yellow", "var(--b-yellow)"]];

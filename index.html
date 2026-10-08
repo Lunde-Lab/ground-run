@@ -173,15 +173,16 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .runleg span i { font-style: normal; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: var(--c); color: var(--panel); font-weight: 700; font-size: .75rem; display: inline-grid; place-items: center; }
 .runleg span.last { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); }
 .runleg span.excl-pt { opacity: .6; }
-.runleg .hidebtn { min-height: 36px; padding: 4px 12px; font-size: .8rem; border-radius: 10px; color: var(--muted); }
+.runleg .hidebtn { min-height: 28px; padding: 2px 8px; font-size: .72rem; font-weight: 500; border-radius: 10px; color: var(--muted); }
 .runleg .hidebtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .runleg span { min-height: 36px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.runleg span.sel { background: rgba(var(--cr), 0.18); border-color: var(--c); box-shadow: 0 0 0 2px var(--c); opacity: 1; }
+.runleg span.sel { background: rgba(var(--cr), 0.14); border-color: var(--c); opacity: 1; }
 .runleg.hl span:not(.sel) { opacity: .55; }
 .runleg span:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 g.fade { opacity: .28; }
-.halo { fill: rgba(var(--cr), 0.22); stroke: var(--c); stroke-width: 2; stroke-dasharray: 3 3; pointer-events: none; }
-.dot.sel { stroke: var(--fg); stroke-width: 3; }
+.halo { fill: none; stroke: var(--c); stroke-width: 2; pointer-events: none; transform-box: fill-box; transform-origin: center; animation: hlpulse 1.5s ease-out infinite; }
+@keyframes hlpulse { 0% { transform: scale(.8); opacity: .9; } 100% { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .halo { animation: none; opacity: .6; } }
 .legend:empty { display: none; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 4px 8px 6px; font-size: .85rem; color: var(--muted); }
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
@@ -1005,8 +1006,8 @@ var BM = (function () {
       var bp = BETA && A.beta && A.beta.byI[p.i], ex = bp && !bp.use;
       var sel = HL === p.i, q = P[k], last = (k === pts.length - 1), g = el("g", { "class": (ex ? "excl-pt" : zone(p.ips)) + (HL !== null && !sel ? " fade" : "") }, layer);
       el("line", { x1: C, y1: C, x2: q[0], y2: q[1], "class": "vec" + (last || sel ? "" : " dim") }, g);
-      if (sel) el("circle", { cx: q[0], cy: q[1], r: 17, "class": "halo" }, g);
-      el("circle", { cx: q[0], cy: q[1], r: sel ? 10 : last ? 8 : 6, "class": "dot" + (sel ? " sel" : "") }, g);
+      if (sel) el("circle", { cx: q[0], cy: q[1], r: 9, "class": "halo" }, g);
+      el("circle", { cx: q[0], cy: q[1], r: last ? 8 : 6, "class": "dot" }, g);
       var a = RTB.toScreen(p.deg), lpp = pt(a, Math.min(max, p.ips) * PER + 18);
       el("text", { x: lpp[0], y: lpp[1] + 4, "text-anchor": "middle", "class": "ptl" }, g, p.ips > max ? (p.i + 1) + " (" + fmt(p.ips, 2) + ")" : p.i + 1);
     });

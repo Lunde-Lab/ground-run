@@ -49,6 +49,7 @@ Live: https://lunde-lab.github.io/ground-run/ (GitHub Pages from `main`, root). 
 - Removed on request – do not reintroduce: page titles/hint texts, Merknad column, manual start-α card, α library per tail number, status line, motor/sensor-offset texts, clock-chart toggles, "Screws fitted after run" legend, "x of 4 weights" picker text, calibration-run card, per-run Use toggle (all runs count), "looks like an average" check.
 - IPS keypad: digits without decimal point, `1041` → `1.041`.
 - Export asks for tail number + date; "New job" clears all tabs; "Load example" loads the real Engine 1/2 job.
+- "Save image" (engine tabs): app draws a PNG of Runs + HUMS on a canvas (no libraries) and opens the iPad share sheet (Save Image); falls back to download.
 
 ## Adding job data (improves run-1 suggestions)
 

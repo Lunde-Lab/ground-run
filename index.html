@@ -535,7 +535,7 @@ table.btab { min-width: 0; table-layout: fixed; }
   </div>
 
   <div class="export">
-    <div class="btns"><button type="button" id="newJob">New job</button><button type="button" id="exportBtn">Export data (JSON)</button><button type="button" id="importBtn">Import data (JSON)</button></div>
+    <div class="btns"><button type="button" id="newJob">New job</button><button type="button" id="exportBtn">Export data (JSON)</button><button type="button" id="saveImg">Save image</button><button type="button" id="importBtn">Import data (JSON)</button></div>
     <div class="btns sub"><button type="button" id="loadEx" class="small">Example</button><button type="button" id="themeBtn" class="small">Light mode</button></div>
     <input type="file" id="importFile" accept=".json,application/json" hidden>
     <p class="fine2" id="exportMsg" hidden></p>
@@ -1630,7 +1630,7 @@ var BM = (function () {
   try { var tv = localStorage.getItem("vibrasjonsdiagram-tab"); if (tv === "3" || tv === "4") VIEW = +tv; } catch (e) {}
   function showTabs() {
     [1, 2, 3, 4].forEach(function (e) { var b = $("tab" + e); b.setAttribute("aria-selected", String(e === VIEW)); b.tabIndex = e === VIEW ? 0 : -1; });
-    $("engView").hidden = VIEW > 2; $("loadEx").hidden = VIEW > 2; $("mrView").hidden = VIEW !== 3; $("trView").hidden = VIEW !== 4;
+    $("engView").hidden = VIEW > 2; $("loadEx").hidden = VIEW > 2; $("saveImg").hidden = VIEW > 2; $("mrView").hidden = VIEW !== 3; $("trView").hidden = VIEW !== 4;
   }
   $("tab1").parentNode.addEventListener("click", function (e) {
     var b = e.target.closest("button[data-eng]"); if (!b) return;
@@ -1700,6 +1700,82 @@ var BM = (function () {
   }
 
   exTail.addEventListener("input", function () { exTail.value = exTail.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 3); });
+
+  // ---------- Bilde av Runs + HUMS (backup som kan leses uten appen) ----------
+  function runsImage() {
+    var rows = [], W = 1060, P = 30, RH = 44, HH = 30, cv = document.createElement("canvas"), c = cv.getContext("2d");
+    var UI = "Barlow, system-ui, -apple-system, sans-serif", DATA = "'JetBrains Mono', Menlo, ui-monospace, monospace";
+    var COL = { fg: "#0e1b23", muted: "#566772", line: "#d3dce2", head: "#f1f6f8", good: "#14935c", warn: "#c97a00", crit: "#d02b2b", Al: "#007f94", Ti: "#c97a00", St: "#4f606b" };
+    if (countOf(S.start)) rows.push({ run: "0", start: true, pos: setupOf(S.start) });
+    S.runs.forEach(function (r, i) {
+      var hw = setupOf(hwOf(r)), pos = setupOf(r.pos);
+      if (num(r.ips) === null && num(r.deg) === null && !pos.length && num(r.hp) === null && num(r.hd) === null && !hw.length) return;
+      rows.push({ run: String(i + 1), ips: r.ips, deg: r.deg, pos: pos, hp: r.hp, hd: r.hd, hw: hw });
+    });
+    // Kolonner: x-start og bredde
+    var cols = [["Run", 56], ["IPS", 90], ["Deg", 70], ["Weights fitted after run", 330], ["HUMS IPS", 96], ["HUMS deg", 86], ["HUMS rec. weights", 272]], x = P;
+    cols.forEach(function (k) { k.push(x); x += k[1]; });
+    var top = 104, H = top + HH * 2 + Math.max(1, rows.length) * RH + 56, k = 2;
+    cv.width = W * k; cv.height = H * k; c.scale(k, k);
+    c.fillStyle = "#ffffff"; c.fillRect(0, 0, W, H);
+    function txt(t, x0, y0, font, color, align) { c.font = font; c.fillStyle = color; c.textAlign = align || "left"; c.textBaseline = "middle"; c.fillText(t, x0, y0); }
+    function hline(y0) { c.fillStyle = COL.line; c.fillRect(P, y0, W - 2 * P, 1); }
+    function v(x0) { return x0 == null ? "" : String(x0).replace(",", "."); }
+    function weights(list, x0, y0, wmax) {
+      if (!list.length) { txt("–", x0 + 8, y0, "16px " + UI, COL.muted); return; }
+      var fs = 17, sep = 14;
+      for (;;) { c.font = "600 " + fs + "px " + DATA; var tw = 0; list.forEach(function (w) { tw += c.measureText(w[0] + " " + w[1]).width + sep; }); if (tw <= wmax - 8 || fs <= 11) break; fs--; }
+      var xx = x0 + 8; list.forEach(function (w) { txt(w[0] + " " + w[1], xx, y0, "600 " + fs + "px " + DATA, COL[w[1]]); xx += c.measureText(w[0] + " " + w[1]).width + sep; });
+    }
+    var now = new Date(), stamp = today() + " " + String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    txt("Engine " + ENG + " Runs", P, 40, "700 28px " + UI, ENG === 2 ? "#7a4fc9" : COL.Al);
+    txt([JOB.tail, stamp].filter(Boolean).join("  ·  "), W - P, 40, "500 18px " + UI, COL.muted, "right");
+    txt("Ground Run · HSS · Target < 0.30 IPS · weights in row k fitted after run k", P, 74, "15px " + UI, COL.muted);
+    // Overskrift: gruppe + kolonner
+    c.fillStyle = COL.head; c.fillRect(P, top, W - 2 * P, HH * 2);
+    txt("RUNS", cols[1][2] + 8, top + HH / 2, "700 13px " + UI, COL.muted);
+    txt("HUMS", cols[4][2] + 8, top + HH / 2, "700 13px " + UI, COL.muted);
+    cols.forEach(function (k2, j) { txt(k2[0].toUpperCase(), j === 0 ? k2[2] + k2[1] / 2 : k2[2] + 8, top + HH * 1.5, "700 12px " + UI, COL.muted, j === 0 ? "center" : "left"); });
+    c.fillStyle = COL.line; c.fillRect(cols[4][2] - 6, top, 1, HH * 2 + Math.max(1, rows.length) * RH);
+    var y = top + HH * 2;
+    if (!rows.length) txt("No runs entered", W / 2, y + RH / 2, "16px " + UI, COL.muted, "center");
+    rows.forEach(function (r) {
+      hline(y); var cy = y + RH / 2, ips = num(r.ips);
+      txt(r.run, cols[0][2] + cols[0][1] / 2, cy, "700 18px " + DATA, COL.fg, "center");
+      if (r.start) txt("Start", cols[1][2] + 8, cy, "16px " + UI, COL.muted);
+      else {
+        txt(v(r.ips) || "–", cols[1][2] + 8, cy, "600 18px " + DATA, ips === null ? COL.muted : COL[zone(ips)]);
+        txt(v(r.deg) || "–", cols[2][2] + 8, cy, "18px " + DATA, num(r.deg) === null ? COL.muted : COL.fg);
+      }
+      weights(r.pos, cols[3][2], cy, cols[3][1]);
+      if (!r.start) {
+        txt(v(r.hp) || "–", cols[4][2] + 8, cy, "18px " + DATA, num(r.hp) === null ? COL.muted : COL.fg);
+        txt(v(r.hd) || "–", cols[5][2] + 8, cy, "18px " + DATA, num(r.hd) === null ? COL.muted : COL.fg);
+        weights(r.hw, cols[6][2], cy, cols[6][1]);
+      }
+      y += RH;
+    });
+    hline(y);
+    txt("Al 0.96 · Ti 1.58 · St 2.54 IPS", P, y + 30, "15px " + UI, COL.muted);
+    return cv;
+  }
+  $("saveImg").addEventListener("click", function () {
+    closePicker(); exMsg("");
+    var url = runsImage().toDataURL("image/png"), name = "ground-run-engine" + ENG + (JOB.tail ? "-" + JOB.tail : "") + "-" + today() + ".png";
+    // Synkront fra data-URL slik at delingen skjer i samme brukertrykk (Safari krever det)
+    var bin = atob(url.split(",")[1]), u8 = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    var file = null;
+    try { file = new File([u8], name, { type: "image/png" }); } catch (e) {}
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).then(function () { exMsg("Image shared."); }, function (e) { if (!e || e.name !== "AbortError") exMsg("Could not share the image."); });
+      return;
+    }
+    try {
+      var a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      exMsg("Saved as " + name + ".");
+    } catch (x) { exMsg("Saving images is not available here."); }
+  });
 
   // ---------- Import ----------
   var impFile = $("importFile"), impData = null;

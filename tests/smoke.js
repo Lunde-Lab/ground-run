@@ -94,6 +94,10 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   ok(!(await txt(pg, '#bOpt')).includes('HUMS suggestion'), 'No HUMS suggestion without HUMS weights');
   ok((await pg.$$('.humsw-dot')).length === 0 && !(await txt(pg, '#legend')).includes('HUMS weights'), 'No HUMS wts point without HUMS weights');
 
+  // Save image: PNG of Runs + HUMS (Chromium has no file share -> download fallback)
+  const [dlImg] = await Promise.all([pg.waitForEvent('download'), pg.click('#saveImg')]);
+  ok(/^ground-run-engine1-.*\.png$/.test(dlImg.suggestedFilename()), 'Save image downloads PNG (' + dlImg.suggestedFilename() + ')');
+
   // Above 4.0 IPS -> no suggestions
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); o.runs[0].ips = '4,5'; localStorage.setItem(k, JSON.stringify(o)); });
   await pg.reload();

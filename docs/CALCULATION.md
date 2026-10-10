@@ -29,14 +29,14 @@ Indexing or re-installing the shaft changes `B`. `α` depends mainly on engine s
 
 ## 3. Fit within a job (runs ≥ 2)
 
-`α` from the **difference method** (same as `analyze.py`, §6) over consecutive runs that are both marked **Use**. This removes `B`, which drifts a lot within a job (a global fit of constant `B` + `α` to the HUMS #2 job had ≈ 0.7 IPS leave-one-out error and predicted ≈ 0.7 IPS for a setup that measured 0.14). `B` is shown as the mean of `V − α·W` over used runs.
+`α` from the **difference method** (same as `analyze.py`, §6) over consecutive runs (all runs count; the app has no per-run exclude). This removes `B`, which drifts a lot within a job (a global fit of constant `B` + `α` to the HUMS #2 job had ≈ 0.7 IPS leave-one-out error and predicted ≈ 0.7 IPS for a setup that measured 0.14). `B` is shown as the mean of `V − α·W` over the runs.
 
-- Needs at least one step between two used runs with different `W`. Fallback: global least squares over the used runs; otherwise `PRIOR`.
+- Needs at least one step between two runs with different `W`. Fallback: global least squares over the runs; otherwise `PRIOR`.
 - α mode (only when HUMS predictions are entered): *Own data* (default), *Blended* `(n·α + 2·α_HUMS)/(n + 2)`, *HUMS*. `α_HUMS` = mean of `(P − V)/(W_new − W)` per run with a HUMS prediction `P`. `W_new` = *HUMS rec. weights* when entered, else the weights fitted after that run. *Prediction error* (one line under α mode): RMS of HUMS prediction on run k vs. measured run k+1, and the same for the tool (fit with data up to run k). When the fitted weights differ from HUMS rec. weights, the HUMS prediction is first scaled to the fitted weights with that run's `α_HUMS`. "Systematically off" (mean error vector > 0.6 × RMS) is only shown with ≥ 3 comparisons.
 
 ## 4. Average check (not power-cycled runs)
 
-A run not power cycled may read as an average of the previous and the true level: `S = (V_{k−1} + T_k)/2`, where `T_k = V_{k−1} + α·(W_k − W_{k−1})` is the level expected from the previous run. If `S` is closer to the reading than `T_k`, the run gets the warning "looks like an average – actual level ≈ |T_k|".
+Removed (Oct 2026) together with the per-run *Use* toggle: it only applied to runs marked as not power cycled. On the Engine 2 job, including runs 5–6 changed α from 1.00∠−115.3° to 0.96∠−115.7°. Bad runs can still be excluded in job data (`"use": false`, see `data/README.md`).
 
 ## 5. Suggestions (optimiser)
 
@@ -44,7 +44,7 @@ A run not power cycled may read as an average of the previous and the true level
 - Exhaustive search of all setups with 1–6 screws (12 positions × Al/Ti/St, max one per position); top 3 per screw count.
 - Recommended count = fewest screws with score ≤ 0.30; otherwise the best score.
 - The screw-count picker shows only 1–3 screws (normal practice is max 3). 4–6 are shown only when 1–3 cannot reach 0.30, i.e. when the recommendation itself is 4+.
-- Also shown: *Keep current* and *Best clean reading* (setup of the lowest used run).
+- Also shown: *Keep current* and *Best run* (setup of the lowest run).
 - *HUMS suggestion*: if HUMS recommended weights are entered for the last run, that setup is listed with the tool's prediction `V_last + α·(W_HUMS − W_last)` (HUMS' own predicted IPS in the heading). *Apply* copies it to the run's weights. The same prediction is drawn in the chart as *HUMS wts* (dashed circle, IPS / deg in the legend) until applied – then it is *Next*.
 
 Guards:

@@ -153,7 +153,6 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .scr .scr-n { font-size: 14px; font-weight: 700; fill: var(--fg) !important; }
 .scr .scr-t { font-size: 12px; font-weight: 700; fill: var(--c) !important; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; }
 .legend i.scr-i { background: rgba(var(--warn-rgb), 0.35); border: 2px solid var(--warn); width: 10px; height: 10px; }
-.excl-pt { --c: var(--grid-strong); --cr: var(--grid-strong-rgb); opacity: .7; }
 .good { --c: var(--good); --cr: var(--good-rgb); } .warn { --c: var(--warn); --cr: var(--warn-rgb); } .crit { --c: var(--crit); --cr: var(--crit-rgb); }
 
 @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
@@ -177,7 +176,6 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .runleg span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-family: var(--font-data); font-size: .82rem; font-variant-numeric: tabular-nums; }
 .runleg span i { font-style: normal; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: var(--c); color: var(--panel); font-weight: 700; font-size: .75rem; display: inline-grid; place-items: center; }
 .runleg span.last { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); }
-.runleg span.excl-pt { opacity: .6; }
 .runleg .hidebtn { min-height: 28px; padding: 2px 8px; font-size: .72rem; font-weight: 500; border-radius: 10px; color: var(--muted); }
 .runleg .hidebtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .runleg span { min-height: 36px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -308,8 +306,6 @@ tr.plan td.pv small { display: block; font-size: .65rem; font-weight: 500; color
 .idxalert { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px; background: rgba(var(--crit-rgb), 0.16); border: 2px solid var(--crit); color: var(--fg); font-size: 1.02rem; line-height: 1.4; }
 .idxalert::before { content: "!"; flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--crit); color: var(--panel); font-weight: 800; display: grid; place-items: center; }
 .idxalert b { color: var(--crit); }
-.avgbox { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border-radius: 12px; background: rgba(var(--warn-rgb), 0.14); border: 1px solid rgba(var(--warn-rgb), 0.5); font-size: .95rem; line-height: 1.4; }
-.avgbox b { font-family: var(--font-data); }
 .idxbeta { font-weight: 600; padding: 12px 14px; border-radius: 12px; background: rgba(var(--crit-rgb), 0.14); border: 2px solid var(--crit); }
 .rh-l { display: flex; align-items: center; gap: 12px; }
 #runsT { display: flex; align-items: center; gap: 10px; }
@@ -317,8 +313,6 @@ tr.plan td.pv small { display: block; font-size: .65rem; font-weight: 500; color
 .eng-tag.e2 { border-color: var(--eng2); background: rgba(var(--eng2-rgb), 0.14); color: var(--eng2); }
 .beta-btn { min-height: 44px; padding: 6px 14px; border-radius: 10px; font-size: .85rem; font-weight: 700; letter-spacing: .02em; }
 .beta-btn[aria-pressed="true"] { background: var(--warn); border-color: var(--warn); color: var(--panel); }
-tr.excl > td, tr.excl > th { opacity: .45; }
-th.run .xtag { display: block; font-family: var(--font-ui); font-size: .58rem; font-weight: 600; line-height: 1.1; color: var(--muted); padding-inline: 2px; }
 .beta { padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; border-color: rgba(var(--warn-rgb), 0.5); }
 .disclaimer { font-size: .9rem; line-height: 1.45; padding: 10px 12px; border-radius: 10px; background: rgba(var(--warn-rgb), 0.12); border: 1px solid rgba(var(--warn-rgb), 0.4); }
 .bstatus { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; border-radius: 12px; font-weight: 600; background: rgba(var(--cr), 0.14); border: 1px solid rgba(var(--cr), 0.45); }
@@ -332,9 +326,9 @@ th.run .xtag { display: block; font-family: var(--font-ui); font-size: .58rem; f
 .target-btn { font-family: var(--font-data); font-weight: 700; min-height: 44px; }
 .seg3 { display: flex; gap: 4px; }
 .seg3 button { min-width: 44px; min-height: 44px; padding: 0 8px; font-family: var(--font-data); font-weight: 700; }
-.seg3 button[aria-checked="true"], .tog.on { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.seg3 button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 table.btab { min-width: 0; table-layout: fixed; }
-.btab thead th:first-child, .btab thead th:nth-child(2) { width: 61px; box-sizing: border-box; }
+.btab thead th:first-child { width: 61px; box-sizing: border-box; }
 .btab th, .btab td { height: 50px; font-size: .9rem; }
 .btab thead th { height: auto; padding: 6px 4px; line-height: 1.2; font-size: .7rem; }
 .btab td.note2 { font-size: .78rem; text-align: left; padding: 4px 8px; line-height: 1.3; }
@@ -353,9 +347,6 @@ table.btab { min-width: 0; table-layout: fixed; }
 .hw-w button[data-w=""] { font-family: var(--font-ui); font-weight: 500; font-size: .95rem; color: var(--muted); }
 .hw-w button[data-w=""].on { background: var(--muted); color: var(--panel); }
 .hw-lbl { font-size: .8rem; color: var(--muted); font-weight: 600; margin-bottom: -4px; }
-.tog { min-height: 40px; height: 40px; padding: 0 8px; font-size: .85rem; border-radius: 8px; width: calc(100% - 8px); }
-.tog.no { background: rgba(var(--crit-rgb), 0.12); border-color: rgba(var(--crit-rgb), 0.4); }
-.avg { color: var(--warn); font-weight: 600; }
 .beta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
 .bcard { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .bcard h3 { margin: 0; font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
@@ -537,7 +528,6 @@ table.btab { min-width: 0; table-layout: fixed; }
     </div>
     <div class="disclaimer"><b>Not verified.</b> For use as a support tool only.</div>
     <div class="amode" id="bMode" hidden></div>
-    <div class="avgbox" id="bAvg" hidden></div>
     <div class="tablewrap"><table class="btab" id="bTable"></table></div>
     <div class="bcard" id="bOpt"></div>
   </section>
@@ -740,7 +730,7 @@ var BM = (function () {
       runFrom("0,338", "97",  [[6, "St"], [9, "Al"], [12, "Ti"]]),
       runFrom("0,329", "307", [[1, "Al"], [6, "Ti"], [8, "Al"]]),
       runFrom("0,140", "248", [])
-    ].map(function (x, i) { x.cyc = !(i === 4 || i === 5); return x; });
+    ];
     return { target: 0.3, nW: 3, start: emptyPos(), runs: r };
   }
   function sampleE1() {
@@ -749,7 +739,7 @@ var BM = (function () {
       runFrom("0,386", "235", [[3, "St"], [9, "Al"], [10, "St"]]),
       runFrom("0,285", "322", []),
       newRun(), newRun()
-    ].map(function (x) { x.cyc = true; return x; });
+    ];
     return { target: 0.3, nW: 3, start: emptyPos(), runs: r };
   }
   function sample() { return sampleE1(); }
@@ -761,10 +751,8 @@ var BM = (function () {
     delete o.plan;
     if (!Array.isArray(o.start)) o.start = emptyPos();
     o.runs.concat([{ pos: o.start }]).forEach(function (r) { r.pos.forEach(function (l) { if (l.length > 1) l.length = 1; }); });
-    // Beta: strømsyklet-flagg. Eksempelkjøring 5 og 6 er ikke strømsyklet, alt annet antas strømsyklet.
-    o.runs.forEach(function (r) {
-      if (r.cyc === undefined) r.cyc = !((r.ips === "0,338" && r.deg === "97") || (r.ips === "0,329" && r.deg === "307"));
-    });
+    // Use/strømsyklet-flagg er fjernet: alle kjøringer teller alltid
+    o.runs.forEach(function (r) { delete r.cyc; delete r.use; });
     if (!o.btarget) o.btarget = 0.3;
     if (!o.maxN) o.maxN = 4;
     return o;
@@ -818,8 +806,6 @@ var BM = (function () {
   // PRIOR-ALPHA:END
   function offOf() { return ENG === 2 ? -4 : 0; }
   try { BETA = localStorage.getItem("vibrasjonsdiagram-beta") === "1"; } catch (e) {}
-  function cycOf(r) { return r.cyc !== false; }
-  function useOf(r) { return r.use !== undefined ? !!r.use : cycOf(r); }
   function zone(ips) { return ips < GOAL ? "good" : ips <= LIMIT ? "warn" : "crit"; }
 
   // ---------- Punkter ----------
@@ -838,13 +824,12 @@ var BM = (function () {
   function betaAnalyse(pts0) {
     var pts = pts0.map(function (p) {
       var r = S.runs[p.i], setup = setupOf(p.i > 0 ? S.runs[p.i - 1].pos : S.start);
-      return { i: p.i, ips: p.ips, deg: p.deg, setup: setup, V: BM.fromMeas(p.ips, p.deg), W: BM.W(setup), cyc: useOf(r), use: useOf(r) };
+      return { i: p.i, ips: p.ips, deg: p.deg, setup: setup, V: BM.fromMeas(p.ips, p.deg), W: BM.W(setup), use: true };
     });
     var res = { pts: pts, byI: {} };
     pts.forEach(function (p) { res.byI[p.i] = p; });
     if (!pts.length) return res;
-    var inc = pts.filter(function (p) { return p.use; });
-    var m = BM.dfit(pts) || BM.fit(inc); res.model = m; res.inc = inc;
+    var m = BM.dfit(pts) || BM.fit(pts); res.model = m;
     res.last = pts[pts.length - 1];
     res.planSetup = setupOf(S.runs[res.last.i].pos); res.Wny = BM.W(res.planSetup);
     var lr = S.runs[res.last.i], lhp = num(lr.hp), lhd = num(lr.hd);
@@ -863,7 +848,7 @@ var BM = (function () {
     res.aH = ha.length ? cmean(ha) : null; res.nH = ha.length;
     // Modus for α
     var mode = res.aH ? (S.amode || "egen") : "egen";
-    var n = inc.length, alpha = null;
+    var n = pts.length, alpha = null;
     if (mode === "hums") alpha = res.aH;
     else if (mode === "blandet") alpha = m ? BM.mul(BM.add(BM.mul(m.alpha, [n, 0]), BM.mul(res.aH, [2, 0])), [1 / (n + 2), 0]) : res.aH;
     else alpha = m ? m.alpha : null;
@@ -887,7 +872,7 @@ var BM = (function () {
       var dWf = BM.sub(nx.W, h.p.W), Pf = h.P;
       if (h.a && BM.abs(BM.sub(BM.add(h.p.V, BM.mul(h.a, dWf)), h.P)) > 0.005) Pf = BM.add(h.p.V, BM.mul(h.a, dWf));
       var eH = BM.sub(nx.V, Pf), errH = BM.abs(eH); eSum = BM.add(eSum, eH); sH += errH * errH; nH++;
-      var upto = pts.filter(function (q) { return q.i <= h.p.i; }), mk = BM.dfit(upto) || BM.fit(upto.filter(function (q) { return q.use; }));
+      var upto = pts.filter(function (q) { return q.i <= h.p.i; }), mk = BM.dfit(upto) || BM.fit(upto);
       if (mk) { var errT = BM.abs(BM.sub(nx.V, BM.add(h.p.V, BM.mul(mk.alpha, dWf)))); sT += errT * errT; nT++; }
     });
     res.nAcc = nH;
@@ -895,18 +880,6 @@ var BM = (function () {
       res.rmsH = Math.sqrt(sH / nH); res.rmsT = nT ? Math.sqrt(sT / nT) : null;
       // Systematisk avvik påstås bare med minst 3 sammenligninger (med 1 er snitt = RMS)
       res.systematic = nH >= 3 && BM.abs([eSum[0] / nH, eSum[1] / nH]) > 0.6 * res.rmsH;
-    }
-    if (m) {
-      // T = forventet nivå ut fra forrige kjøring og vektendringen
-      pts.forEach(function (p, k) {
-        if (!k) return;
-        var T = BM.add(pts[k - 1].V, BM.mul(m.alpha, BM.sub(p.W, pts[k - 1].W))); p.T = T;
-        if (!p.cyc) {
-          var Sv = BM.mul(BM.add(pts[k - 1].V, T), [0.5, 0]);
-          p.avgWarn = BM.abs(BM.sub(Sv, p.V)) < BM.abs(BM.sub(T, p.V));
-          p.Tm = BM.toMeas(T); p.Sm = BM.toMeas(Sv);
-        }
-      });
     }
     if (!alpha) return res;
     res.off = offOf();
@@ -929,7 +902,7 @@ var BM = (function () {
     res.per = per.filter(function (x) { return x.n <= 3 || rn.n > 3; });
     res.selN = (SELN && res.per.some(function (x) { return x.n === SELN; })) ? SELN : rn.n;
     res.opt.top = res.opt.byN[res.selN];
-    res.bestClean = inc.reduce(function (b, p) { return !b || p.ips < b.ips ? p : b; }, null);
+    res.bestClean = pts.reduce(function (b, p) { return !b || p.ips < b.ips ? p : b; }, null);
     return res;
   }
 
@@ -1035,8 +1008,7 @@ var BM = (function () {
     var P = pts.map(function (p) { return pt(RTB.toScreen(p.deg), Math.min(max, p.ips) * PER); });
     if (P.length > 1) el("polyline", { points: P.map(function (q) { return q[0] + "," + q[1]; }).join(" "), "class": "path" }, layer);
     pts.forEach(function (p, k) {
-      var bp = BETA && A.beta && A.beta.byI[p.i], ex = bp && !bp.use;
-      var sel = HL === p.i, q = P[k], last = (k === pts.length - 1), g = el("g", { "class": (ex ? "excl-pt" : zone(p.ips)) + (HL !== null && !sel ? " fade" : "") }, layer);
+      var sel = HL === p.i, q = P[k], last = (k === pts.length - 1), g = el("g", { "class": zone(p.ips) + (HL !== null && !sel ? " fade" : "") }, layer);
       el("line", { x1: C, y1: C, x2: q[0], y2: q[1], "class": "vec" + (last || sel ? "" : " dim") }, g);
       if (sel) el("circle", { cx: q[0], cy: q[1], r: 9, "class": "halo" }, g);
       el("circle", { cx: q[0], cy: q[1], r: last ? 8 : 6, "class": "dot" }, g);
@@ -1142,10 +1114,6 @@ var BM = (function () {
     S.runs.forEach(function (r, i) {
       var tr = document.createElement("tr");
       var th = document.createElement("th"); th.className = "run"; th.scope = "row"; th.textContent = i + 1; tr.appendChild(th);
-      if (BETA && A.beta && A.beta.byI[i] && !A.beta.byI[i].use) {
-        tr.className = "excl";
-        var xt = document.createElement("span"); xt.className = "xtag"; xt.textContent = "not used"; th.appendChild(xt);
-      }
       var ipsTd = document.createElement("td"), ips = mkBtn("cell num", "IPS, run " + (i + 1));
       var degTd = document.createElement("td"), deg = mkBtn("cell num", "Degrees, run " + (i + 1));
       ips.setAttribute("aria-haspopup", "dialog"); deg.setAttribute("aria-haspopup", "dialog");
@@ -1183,11 +1151,9 @@ var BM = (function () {
     var B = A.beta || { pts: [] };
     // Tabell per kjøring
     var tb = $("bTable");
-    var h = '<thead><tr><th>Use</th><th>Run</th><th>HUMS pred IPS</th><th>HUMS pred deg</th><th>HUMS rec. weights</th></tr></thead><tbody>';
+    var h = '<thead><tr><th>Run</th><th>HUMS pred IPS</th><th>HUMS pred deg</th><th>HUMS rec. weights</th></tr></thead><tbody>';
     S.runs.forEach(function (r, i) {
-      var p = B.byI[i], ex = p && !p.use;
-      h += '<tr class="' + (ex ? "excl" : "") + '" data-i="' + i + '">' +
-        '<td><button type="button" class="tog' + (useOf(r) ? ' on' : '') + '" data-act="use">' + (useOf(r) ? '✓' : '–') + '</button></td>' +
+      h += '<tr data-i="' + i + '">' +
         '<th class="run" scope="row">' + (i + 1) + '</th>' +
         '<td><button type="button" class="cell num' + (r.hp ? '' : ' empty') + '" data-act="hp">' + (r.hp ? String(r.hp).replace(",", ".") : '–') + '</button></td>' +
         '<td><button type="button" class="cell num' + (r.hd ? '' : ' empty') + '" data-act="hd">' + (r.hd ? String(r.hd).replace(",", ".") : '–') + '</button></td>' +
@@ -1197,9 +1163,6 @@ var BM = (function () {
     });
     tb.innerHTML = h + '</tbody>';
     drawModeAcc(B);
-    var aw = (B.pts || []).filter(function (p) { return p.avgWarn; }), ab = $("bAvg");
-    ab.hidden = !aw.length;
-    ab.innerHTML = aw.map(function (p) { return '<div>Run ' + (p.i + 1) + ' (' + fmt(p.ips, 2) + ' IPS) looks like an average – actual level may be approx. <b>' + fmt(p.Tm.ips, 2) + ' ips</b>.</div>'; }).join('');
     // 1. Over 4,0 IPS: ingen vektforslag
     if (B.last && B.last.ips > 4.0) {
       $("bOpt").innerHTML = '<h3>Suggestions</h3><div class="idxbeta">No weight suggestions. The last run is above 4.0 IPS – index the output shaft per AMM 18-12-02 and take a new reading.</div>';
@@ -1244,7 +1207,7 @@ var BM = (function () {
       srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, lbl: 'measured', apply: 'keep' });
     if (B.bestClean && B.bestClean.i !== B.last.i) {
       var bc = B.bestClean;
-      oh += srow({ rk: 'Run ' + (bc.i + 1), cls: 'back', setup: bc.setup, ips: bc.ips, d: 3, lbl: 'best clean', apply: 'back' });
+      oh += srow({ rk: 'Run ' + (bc.i + 1), cls: 'back', setup: bc.setup, ips: bc.ips, d: 3, lbl: 'best run', apply: 'back' });
     }
     oh += '</div>';
     $("bOpt").innerHTML = oh;
@@ -1283,9 +1246,7 @@ var BM = (function () {
   $("bTable").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-act]"); if (!b) return;
     var i = +b.closest("tr").getAttribute("data-i"), r = S.runs[i], act = b.getAttribute("data-act");
-    if (act === "cyc") { r.cyc = !cycOf(r); delete r.use; }
-    else if (act === "mode") r.mode = r.mode === "Prompted" ? "Forced" : r.mode === "Forced" ? "" : "Prompted";
-    else if (act === "use") r.use = !useOf(r);
+    if (act === "mode") r.mode = r.mode === "Prompted" ? "Forced" : r.mode === "Forced" ? "" : "Prompted";
     else if (act === "hw") { openHw(i, b); return; }
     else if (act === "hp" || act === "hd") {
       openNum({ kind: act === "hp" ? "ips" : "deg", title: "Run " + (i + 1) + " · HUMS predicted " + (act === "hp" ? "IPS" : "degrees"), btn: b,
@@ -1480,9 +1441,8 @@ var BM = (function () {
     var vis = V.last ? pts.slice(-1) : pts;
     el3.innerHTML = (pts.length > 1 ? '<button type="button" class="hidebtn" aria-pressed="' + V.last + '" data-hide="1">' + (V.last ? 'Show runs' : 'Hide runs') + '</button>' : '') + vis.map(function (p) {
       var k = pts.indexOf(p);
-      var bp = BETA && A.beta && A.beta.byI[p.i], ex = bp && !bp.use;
-      return '<span class="' + (ex ? 'excl-pt' : zone(p.ips)) + (k === pts.length - 1 ? ' last' : '') + (HL === p.i ? ' sel' : '') + '" role="button" tabindex="0" aria-pressed="' + (HL === p.i) + '" data-i="' + p.i + '"><i>' + (p.i + 1) + '</i>' +
-        String(S.runs[p.i].ips).replace(",", ".") + ' / ' + fdeg(p.deg) + '°' + (ex ? ' · not used' : '') + '</span>';
+      return '<span class="' + zone(p.ips) + (k === pts.length - 1 ? ' last' : '') + (HL === p.i ? ' sel' : '') + '" role="button" tabindex="0" aria-pressed="' + (HL === p.i) + '" data-i="' + p.i + '"><i>' + (p.i + 1) + '</i>' +
+        String(S.runs[p.i].ips).replace(",", ".") + ' / ' + fdeg(p.deg) + '°' + '</span>';
     }).join('');
   }
   function legToggle(e) {

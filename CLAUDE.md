@@ -46,7 +46,7 @@ Live: https://lunde-lab.github.io/ground-run/ (GitHub Pages from `main`, root). 
 - No built-in "standard α"; run-1 suggestions use `PRIOR` from real jobs, clearly marked with a range. From run 2 the job's own fit is used.
 - "Next" / "Next ≈" in the chart only when weights are entered after the last run.
 - Last run < 0.30 → "Within target – no change needed". > 4.0 → index alert, no suggestions.
-- Removed on request – do not reintroduce: page titles/hint texts, Merknad column, manual start-α card, α library per tail number, status line, motor/sensor-offset texts, clock-chart toggles, "Screws fitted after run" legend, "x of 4 weights" picker text, calibration-run card.
+- Removed on request – do not reintroduce: page titles/hint texts, Merknad column, manual start-α card, α library per tail number, status line, motor/sensor-offset texts, clock-chart toggles, "Screws fitted after run" legend, "x of 4 weights" picker text, calibration-run card, per-run Use toggle (all runs count), "looks like an average" check.
 - IPS keypad: digits without decimal point, `1041` → `1.041`.
 - Export asks for tail number + date; "New job" clears all tabs; "Load example" loads the real Engine 1/2 job.
 

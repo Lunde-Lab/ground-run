@@ -9,7 +9,7 @@ python3 scripts/analyze.py --write    # update PRIOR in index.html + data/priors
 
 ## Two accepted formats
 
-**1. Export from the app** – "Export data (JSON)" at the bottom of the app. Copy the file in as-is. Both engines are read; engines with fewer than two runs are ignored. Runs switched off under *Use in fit* are skipped. Remove the tail number from the file if the repo is public and you prefer not to publish it.
+**1. Export from the app** – "Export data (JSON)" at the bottom of the app. Copy the file in as-is. Both engines are read; engines with fewer than two runs are ignored. (Exports from older app versions may carry per-run `use`/`cyc` flags; runs with `use: false` are skipped.) Remove the tail number from the file if the repo is public and you prefer not to publish it.
 
 **2. Hand-written** (e.g. from a paper job sheet):
 

@@ -29,6 +29,12 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.evaluate(() => localStorage.removeItem('vibrasjonsdiagram-v4-engine2'));
   await pg.reload();
 
+  // Use column removed: old use/cyc flags are dropped on load, all runs count
+  await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4-engine2', o = JSON.parse(localStorage.getItem(k)); o.runs[1].use = false; o.runs[2].cyc = false; localStorage.setItem(k, JSON.stringify(o)); });
+  await pg.reload();
+  const fl = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4-engine2')).runs.some(r => 'use' in r || 'cyc' in r));
+  ok(!fl && !(await txt(pg, '#bTable thead')).includes('Use') && !(await pg.$('#bTable button[data-act="use"]')), 'No Use column, old use/cyc flags dropped');
+
   // HUMS recommended weights: cell -> modal -> pos 7 St, pos 2 Ti -> compact cell, saved as hw
   await pg.click('#bTable tr[data-i="0"] button[data-act="hw"]');
   ok(await pg.isVisible('#hwModal'), 'HUMS rec. weights modal opens');

@@ -503,7 +503,6 @@ table.btab { min-width: 0; table-layout: fixed; }
       <div class="btns">
         <button class="primary" id="addRun" type="button">+ Add run</button>
         <button id="delRun" type="button">Remove last</button>
-        <button id="clearRuns" type="button">Clear table</button>
       </div>
     </div>
     <div class="idxalert" id="idxAlert" role="alert" hidden></div>
@@ -1434,11 +1433,6 @@ var BM = (function () {
   $("delRun").addEventListener("click", function () {
     if (S.runs.length <= 1) return; var n = S.runs.length;
     ask("Remove run " + n + "?", "The row and all its values will be deleted.", "Remove", function () { S.runs.pop(); save(); refresh(); });
-  });
-  $("clearRuns").addEventListener("click", function () {
-    ask("Clear the whole table?", "All runs and weights will be deleted.", "Clear table", function () {
-      S.runs = []; for (var k = 0; k < 5; k++) S.runs.push(newRun()); S.start = emptyPos(); save(); refresh();
-    });
   });
 
   // ---------- Oppdatering ----------

@@ -1237,6 +1237,13 @@ var BM = (function () {
       var worst = t.preds.reduce(function (a, b) { return b.ips > a.ips ? b : a; });
       oh += srow({ rk: k + 1, cls: k === 0 ? 'best' : '', setup: t.setup, ips: worst.ips, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(t.setup) : null, apply: k, primary: k === 0 });
     });
+    // HUMS sine anbefalte vekter for siste kjøring, med verktøyets prediksjon
+    var lr = S.runs[B.last.i], hwL = setupOf(hwOf(lr));
+    if (hwL.length) {
+      var hpI = num(lr.hp), hpp = BM.abs(BM.add(B.last.V, BM.mul(B.alpha, BM.sub(BM.W(hwL), B.last.W))));
+      oh += '<div class="ssub">HUMS suggestion' + (hpI !== null ? ' · HUMS predicts ' + fmt(hpI, 2) + ' IPS' : '') + '</div>' +
+        srow({ rk: 'HUMS', cls: 'back', setup: hwL, ips: hpp, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(hwL) : null, apply: 'hums' });
+    }
     oh += '<div class="ssub">Go back</div>' +
       srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, lbl: 'measured', apply: 'keep' });
     if (B.bestClean && B.bestClean.i !== B.last.i) {
@@ -1292,7 +1299,7 @@ var BM = (function () {
     if (nb) { SELN = +nb.getAttribute("data-n"); refresh(); return; }
     var b = e.target.closest("button[data-apply]"); if (!b || !A.beta) return;
     var v = b.getAttribute("data-apply");
-    if (v === "keep") applySetup(A.beta.last.setup); else if (v === "back") applySetup(A.beta.bestClean.setup); else applySetup(A.beta.opt.top[+v].setup);
+    if (v === "keep") applySetup(A.beta.last.setup); else if (v === "hums") applySetup(setupOf(hwOf(S.runs[A.beta.last.i]))); else if (v === "back") applySetup(A.beta.bestClean.setup); else applySetup(A.beta.opt.top[+v].setup);
   });
   $("bTable").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-act]"); if (!b) return;

@@ -62,6 +62,17 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   ok((await pg.$$('#bOpt .srow:not(.back)')).length >= 1, 'Run-1 suggestions listed');
   ok(/Range \d\.\d\d–\d\.\d\d/.test(opt), 'Suggestions show a range');
 
+  // HUMS rec. weights on last run -> 'HUMS suggestion' row in Suggestions, Apply copies them to the run's weights
+  await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)), E = Array.from({ length: 12 }, () => []); E[3] = ['St']; o.runs[0].hw = E; o.runs[0].hp = '0,20'; o.runs[0].hd = '90'; localStorage.setItem(k, JSON.stringify(o)); });
+  await pg.reload();
+  ok((await txt(pg, '#bOpt')).includes('HUMS suggestion · HUMS predicts 0.20 IPS'), 'Suggestions show HUMS suggestion when HUMS weights entered');
+  await pg.click('#bOpt button[data-apply="hums"]');
+  const posH = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4')).runs[0].pos);
+  ok(posH[3][0] === 'St' && posH.flat().length === 1, 'Apply HUMS suggestion sets run weights');
+  await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); delete o.runs[0].hw; delete o.runs[0].hp; delete o.runs[0].hd; o.runs[0].pos = Array.from({ length: 12 }, () => []); localStorage.setItem(k, JSON.stringify(o)); });
+  await pg.reload();
+  ok(!(await txt(pg, '#bOpt')).includes('HUMS suggestion'), 'No HUMS suggestion without HUMS weights');
+
   // Above 4.0 IPS -> no suggestions
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); o.runs[0].ips = '4,5'; localStorage.setItem(k, JSON.stringify(o)); });
   await pg.reload();

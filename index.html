@@ -145,7 +145,9 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .pred-l { font-size: 12px; font-weight: 700; fill: var(--accent) !important; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; }
 .hums-arrow { stroke: var(--fg); stroke-width: 1.6; stroke-dasharray: 2 4; fill: none; opacity: .7; }
 .hums-dot { fill: var(--panel); stroke: var(--fg); stroke-width: 2.5; }
+.humsw-dot { fill: var(--panel); stroke: var(--fg); stroke-width: 2.5; stroke-dasharray: 4 3; }
 .hums-l { font-size: 12px; font-weight: 700; fill: var(--fg) !important; paint-order: stroke; stroke: var(--panel); stroke-width: 3px; }
+.legend i.hw-i { width: 9px; height: 9px; background: var(--panel); border: 2px dashed var(--fg); }
 .legend i.dia-i { width: 9px; height: 9px; border-radius: 1px; transform: rotate(45deg); background: var(--panel); border: 2px solid var(--fg); }
 .scr .scr-b { fill: rgba(var(--cr), 0.35); stroke: var(--c); stroke-width: 2; }
 .scr .scr-n { font-size: 14px; font-weight: 700; fill: var(--fg) !important; }
@@ -927,6 +929,9 @@ var BM = (function () {
     var ref = res.last, bases = [];
     res.baseStd = BM.sub(ref.V, BM.mul(alpha, ref.W)); bases.push(res.baseStd);
     res.predStd = BM.toMeas(BM.add(res.baseStd, BM.mul(alpha, res.Wny)));
+    // HUMS sine anbefalte vekter for siste kjøring, med verktøyets prediksjon
+    var hwS = setupOf(hwOf(S.runs[ref.i]));
+    if (hwS.length) res.humsW = { setup: hwS, pred: BM.toMeas(BM.add(res.baseStd, BM.mul(alpha, BM.W(hwS)))), same: JSON.stringify(hwS) === JSON.stringify(res.planSetup) };
     res.opt = BM.optimize(bases, alpha, 3);
     var per = res.opt.perN.filter(function (x) { return x; }), rn = null;
     per.forEach(function (x) { if (!rn && Math.round(x.score * 100) / 100 <= GOAL) rn = x; });
@@ -1084,6 +1089,15 @@ var BM = (function () {
       var lh = pt(a4, Math.min(max, hm.ips) * PER + 22);
       el("text", { x: lh[0], y: lh[1] + 4, "text-anchor": "middle", "class": "hums-l" }, layer, "HUMS");
     }
+    // Verktøyets prediksjon for HUMS sine anbefalte vekter (ikke når de allerede er satt på – da er det Next)
+    var hw2 = BETA && A.beta && A.beta.humsW && !A.beta.humsW.same && A.pts.length && !(A.beta.last.ips > 4.0) ? A.beta.humsW.pred : null;
+    if (hw2) {
+      var a6 = RTB.toScreen(hw2.deg), q6 = pt(a6, Math.min(max, hw2.ips) * PER), ql3 = P[P.length - 1];
+      if (ql3) el("line", { x1: ql3[0], y1: ql3[1], x2: q6[0], y2: q6[1], "class": "hums-arrow" }, layer);
+      el("circle", { cx: q6[0], cy: q6[1], r: 8, "class": "humsw-dot" }, layer);
+      var l6 = pt(a6, Math.min(max, hw2.ips) * PER + 22);
+      el("text", { x: l6[0], y: l6[1] + 4, "text-anchor": "middle", "class": "hums-l" }, layer, "HUMS wts");
+    }
     // Valgte skruer: siste rad (inkl. rad 0) som har skruer
     var src = null, srcLbl = "";
     for (var ri = S.runs.length - 1; ri >= 0; ri--) if (countOf(S.runs[ri].pos)) { src = S.runs[ri].pos; srcLbl = "fitted after run " + (ri + 1); break; }
@@ -1097,7 +1111,8 @@ var BM = (function () {
       el("text", { x: qi[0], y: qi[1] + 4.5, "text-anchor": "middle", "class": "scr-t" }, gw, w[1]);
     });
     $("legend").innerHTML =
-      (BETA ? '<span><i class="ring-i"></i>Next (predicted)' + (nextM ? ' <b>' + (nextApx ? '≈ ' : '') + fmt(nextM.ips, 2) + ' IPS / ' + fdeg(nextM.deg) + '°</b>' : '') + '</span>' + (A.beta && A.beta.alphaSrc === "prior" && A.beta.approx && A.beta.approx.userSet && A.pts.length && !(A.beta.last.ips > 4.0) ? '<span><i class="zone-i"></i>Approx. range (α uncertain)</span>' : '') + '<span><i class="dia-i"></i>HUMS (predicted)</span>' : '');
+      (BETA ? '<span><i class="ring-i"></i>Next (predicted)' + (nextM ? ' <b>' + (nextApx ? '≈ ' : '') + fmt(nextM.ips, 2) + ' IPS / ' + fdeg(nextM.deg) + '°</b>' : '') + '</span>' + (A.beta && A.beta.alphaSrc === "prior" && A.beta.approx && A.beta.approx.userSet && A.pts.length && !(A.beta.last.ips > 4.0) ? '<span><i class="zone-i"></i>Approx. range (α uncertain)</span>' : '') + '<span><i class="dia-i"></i>HUMS (predicted)' + (hm ? ' <b>' + fmt(hm.ips, 2) + ' IPS / ' + fdeg(hm.deg) + '°</b>' : '') + '</span>' +
+        (hw2 ? '<span><i class="hw-i"></i>HUMS weights (tool)' + ' <b>' + (A.beta.alphaSrc === "prior" ? '≈ ' : '') + fmt(hw2.ips, 2) + ' IPS / ' + fdeg(hw2.deg) + '°</b></span>' : '') : '');
   }
 
   // ---------- Tabell ----------
@@ -1238,11 +1253,9 @@ var BM = (function () {
       oh += srow({ rk: k + 1, cls: k === 0 ? 'best' : '', setup: t.setup, ips: worst.ips, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(t.setup) : null, apply: k, primary: k === 0 });
     });
     // HUMS sine anbefalte vekter for siste kjøring, med verktøyets prediksjon
-    var lr = S.runs[B.last.i], hwL = setupOf(hwOf(lr));
-    if (hwL.length) {
-      var hpI = num(lr.hp), hpp = BM.abs(BM.add(B.last.V, BM.mul(B.alpha, BM.sub(BM.W(hwL), B.last.W))));
-      oh += '<div class="ssub">HUMS suggestion' + (hpI !== null ? ' · HUMS predicts ' + fmt(hpI, 2) + ' IPS' : '') + '</div>' +
-        srow({ rk: 'HUMS', cls: 'back', setup: hwL, ips: hpp, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(hwL) : null, apply: 'hums' });
+    if (B.humsW) {
+      oh += '<div class="ssub">HUMS suggestion' + (B.humsNext ? ' · HUMS predicts ' + fmt(B.humsNext.ips, 2) + ' IPS' : '') + '</div>' +
+        srow({ rk: 'HUMS', cls: 'back', setup: B.humsW.setup, ips: B.humsW.pred.ips, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(B.humsW.setup) : null, apply: 'hums' });
     }
     oh += '<div class="ssub">Go back</div>' +
       srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, lbl: 'measured', apply: 'keep' });
@@ -1299,7 +1312,7 @@ var BM = (function () {
     if (nb) { SELN = +nb.getAttribute("data-n"); refresh(); return; }
     var b = e.target.closest("button[data-apply]"); if (!b || !A.beta) return;
     var v = b.getAttribute("data-apply");
-    if (v === "keep") applySetup(A.beta.last.setup); else if (v === "hums") applySetup(setupOf(hwOf(S.runs[A.beta.last.i]))); else if (v === "back") applySetup(A.beta.bestClean.setup); else applySetup(A.beta.opt.top[+v].setup);
+    if (v === "keep") applySetup(A.beta.last.setup); else if (v === "hums") applySetup(A.beta.humsW.setup); else if (v === "back") applySetup(A.beta.bestClean.setup); else applySetup(A.beta.opt.top[+v].setup);
   });
   $("bTable").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-act]"); if (!b) return;

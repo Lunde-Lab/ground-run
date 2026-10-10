@@ -45,7 +45,7 @@ A run not power cycled may read as an average of the previous and the true level
 - Recommended count = fewest screws with score ≤ 0.30; otherwise the best score.
 - The screw-count picker shows only 1–3 screws (normal practice is max 3). 4–6 are shown only when 1–3 cannot reach 0.30, i.e. when the recommendation itself is 4+.
 - Also shown: *Keep current* and *Best clean reading* (setup of the lowest used run).
-- *HUMS suggestion*: if HUMS recommended weights are entered for the last run, that setup is listed with the tool's prediction `V_last + α·(W_HUMS − W_last)` (HUMS' own predicted IPS in the heading). *Apply* copies it to the run's weights.
+- *HUMS suggestion*: if HUMS recommended weights are entered for the last run, that setup is listed with the tool's prediction `V_last + α·(W_HUMS − W_last)` (HUMS' own predicted IPS in the heading). *Apply* copies it to the run's weights. The same prediction is drawn in the chart as *HUMS wts* (dashed circle, IPS / deg in the legend) until applied – then it is *Next*.
 
 Guards:
 - Last run **> 4.0 IPS** → no suggestions; index the output shaft per AMM.

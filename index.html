@@ -178,8 +178,6 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .runleg span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-family: var(--font-data); font-size: .82rem; font-variant-numeric: tabular-nums; }
 .runleg span i { font-style: normal; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: var(--c); color: var(--panel); font-weight: 700; font-size: .75rem; display: inline-grid; place-items: center; }
 .runleg span.last { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); }
-.runleg .hidebtn { min-height: 28px; padding: 2px 8px; font-size: .72rem; font-weight: 500; border-radius: 10px; color: var(--muted); }
-.runleg .hidebtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .runleg span { min-height: 36px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .runleg span.sel { background: rgba(var(--cr), 0.14); border-color: var(--c); opacity: 1; }
 .runleg.hl span:not(.sel) { opacity: .55; }
@@ -1001,8 +999,7 @@ var BM = (function () {
   var HL = null;
   function drawChart() {
     if (HL !== null && !(A.pts || []).some(function (p) { return p.i === HL; })) HL = null;
-    var all = A.pts || [], pts = V.last ? all.slice(-1) : all;
-    if (HL !== null && !pts.some(function (p) { return p.i === HL; })) HL = null;
+    var all = A.pts || [], pts = all;
     var top = all.reduce(function (m, p) { return Math.max(m, p.ips); }, 0);
     var max = V.scale === "1" ? 1 : V.scale === "2" ? 2 : (top > 1 ? 2 : 1);
     var sig = max + "|" + GOAL + "|" + BETA;
@@ -1439,16 +1436,12 @@ var BM = (function () {
   function drawRunLeg() {
     var pts = A.pts || [], el3 = $("runLeg");
     el3.classList.toggle("hl", HL !== null);
-    var vis = V.last ? pts.slice(-1) : pts;
-    el3.innerHTML = (pts.length > 1 ? '<button type="button" class="hidebtn" aria-pressed="' + V.last + '" data-hide="1">' + (V.last ? 'Show runs' : 'Hide runs') + '</button>' : '') + vis.map(function (p) {
-      var k = pts.indexOf(p);
+    el3.innerHTML = pts.map(function (p, k) {
       return '<span class="' + zone(p.ips) + (k === pts.length - 1 ? ' last' : '') + (HL === p.i ? ' sel' : '') + '" role="button" tabindex="0" aria-pressed="' + (HL === p.i) + '" data-i="' + p.i + '"><i>' + (p.i + 1) + '</i>' +
         String(S.runs[p.i].ips).replace(",", ".") + ' / ' + fdeg(p.deg) + '°' + '</span>';
     }).join('');
   }
   function legToggle(e) {
-    var hb = e.target.closest("button[data-hide]");
-    if (hb) { V.last = !V.last; saveV(); drawChart(); drawRunLeg(); return; }
     var b = e.target.closest("span[data-i]"); if (!b) return;
     if (e.type === "keydown") { if (e.key !== "Enter" && e.key !== " ") return; e.preventDefault(); }
     var i = +b.getAttribute("data-i"); HL = HL === i ? null : i;

@@ -167,6 +167,7 @@ svg text { font-family: var(--font-data); fill: var(--fg); }
 .layers button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
 #chart.no-clock .lay-clock, #chart.no-deg .lay-deg, #chart.no-vec .vec, #chart.no-vec .path { display: none; }
 .runs-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; }
+.runs-foot.end { justify-content: flex-end; }
 .limits { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .88rem; color: var(--muted); }
 .limits span { display: inline-flex; align-items: center; gap: 7px; }
 .limits i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); display: inline-block; }
@@ -307,7 +308,7 @@ tr.plan td.pv small { display: block; font-size: .65rem; font-weight: 500; color
 .idxalert::before { content: "!"; flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--crit); color: var(--panel); font-weight: 800; display: grid; place-items: center; }
 .idxalert b { color: var(--crit); }
 .idxbeta { font-weight: 600; padding: 12px 14px; border-radius: 12px; background: rgba(var(--crit-rgb), 0.14); border: 2px solid var(--crit); }
-.rh-l { display: flex; align-items: center; gap: 12px; }
+.rh-l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
 #runsT { display: flex; align-items: center; gap: 10px; }
 .eng-tag { display: inline-flex; align-items: center; min-height: 32px; padding: 4px 12px; border-radius: 8px; border: 1.5px solid var(--accent); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); font-size: .95rem; font-weight: 700; letter-spacing: .04em; text-transform: none; white-space: nowrap; }
 .eng-tag.e2 { border-color: var(--eng2); background: rgba(var(--eng2-rgb), 0.14); color: var(--eng2); }
@@ -497,7 +498,7 @@ table.btab { min-width: 0; table-layout: fixed; }
 
   <section class="card runs" aria-labelledby="runsT">
     <div class="runs-head">
-      <div class="rh-l"><h2 id="runsT"><span class="eng-tag" id="engTag">Engine 1 Runs</span></h2></div>
+      <div class="rh-l"><h2 id="runsT"><span class="eng-tag" id="engTag">Engine 1 Runs</span></h2><div class="limits"><span class="good"><i></i>Target <b>&lt; 0.30</b> IPS</span></div></div>
       <div class="btns">
         <button class="primary" id="addRun" type="button">+ Add run</button>
         <button id="delRun" type="button">Remove last</button>
@@ -514,18 +515,12 @@ table.btab { min-width: 0; table-layout: fixed; }
         <tbody id="runBody"></tbody>
       </table>
     </div>
-    <div class="runs-foot">
-      <div class="limits">
-        <span class="good"><i></i>Target <b>&lt; 0.30</b> IPS</span>
-        <span class="crit"><i></i>Index output shaft <b>&gt; 4.0</b> IPS</span>
-      </div>
-      <button type="button" class="beta-btn" id="betaBtn" aria-pressed="false">Advanced (BETA)</button>
-    </div>
   </section>
 
   <section class="card runs" aria-labelledby="humsT">
     <div class="runs-head"><div class="rh-l"><h2 id="humsT"><span class="eng-tag" id="humsTag">HUMS</span></h2></div></div>
     <div class="tablewrap"><table class="btab" id="bTable"></table></div>
+    <div class="runs-foot end"><button type="button" class="beta-btn" id="betaBtn" aria-pressed="false">Advanced (BETA)</button></div>
   </section>
 
   <section class="card beta" id="betaView" aria-labelledby="betaT" hidden>

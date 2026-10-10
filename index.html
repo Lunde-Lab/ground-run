@@ -523,13 +523,17 @@ table.btab { min-width: 0; table-layout: fixed; }
     </div>
   </section>
 
+  <section class="card runs" aria-labelledby="humsT">
+    <div class="runs-head"><div class="rh-l"><h2 id="humsT"><span class="eng-tag" id="humsTag">HUMS</span></h2></div></div>
+    <div class="tablewrap"><table class="btab" id="bTable"></table></div>
+  </section>
+
   <section class="card beta" id="betaView" aria-labelledby="betaT" hidden>
     <div class="beta-top">
       <h2 id="betaT">Beta · HSS balance</h2>
     </div>
     <div class="disclaimer"><b>Not verified.</b> For use as a support tool only.</div>
     <div class="amode" id="bMode" hidden></div>
-    <div class="tablewrap"><table class="btab" id="bTable"></table></div>
     <div class="bcard" id="bOpt"></div>
   </section>
   </div>
@@ -819,6 +823,9 @@ var BM = (function () {
       if (ips !== null && deg !== null) pts.push({ i: i, ips: ips, deg: deg });
     });
     A = { pts: pts };
+    // HUMS-prediksjon lagt inn på siste målte kjøring (vises også uten Advanced)
+    var lp = pts[pts.length - 1], lhr = lp && S.runs[lp.i];
+    if (lhr && num(lhr.hp) !== null && num(lhr.hd) !== null) A.humsNext = { ips: num(lhr.hp), deg: num(lhr.hd) };
     if (BETA) A.beta = betaAnalyse(pts);
   }
   function cmean(list) { var z = [0, 0]; list.forEach(function (a) { z = BM.add(z, a); }); return [z[0] / list.length, z[1] / list.length]; }
@@ -1040,7 +1047,7 @@ var BM = (function () {
       el("text", { x: la[0], y: la[1] + 4, "text-anchor": "middle", "class": "pred-l" }, layer, "Next ≈");
     }
     // HUMS-prediksjon lagt inn på siste målte kjøring
-    var hm = BETA && A.beta && A.beta.humsNext;
+    var hm = A.humsNext;
     if (hm && A.pts.length) {
       var a4 = RTB.toScreen(hm.deg), q4 = pt(a4, Math.min(max, hm.ips) * PER), ql2 = P[P.length - 1], dd = 9;
       if (ql2) el("line", { x1: ql2[0], y1: ql2[1], x2: q4[0], y2: q4[1], "class": "hums-arrow" }, layer);
@@ -1070,8 +1077,9 @@ var BM = (function () {
       el("text", { x: qi[0], y: qi[1] + 4.5, "text-anchor": "middle", "class": "scr-t" }, gw, w[1]);
     });
     $("legend").innerHTML =
-      (BETA ? '<span><i class="ring-i"></i>Next (predicted)' + (nextM ? ' <b>' + (nextApx ? '≈ ' : '') + fmt(nextM.ips, 2) + ' IPS / ' + fdeg(nextM.deg) + '°</b>' : '') + '</span>' + (A.beta && A.beta.alphaSrc === "prior" && A.beta.approx && A.beta.approx.userSet && A.pts.length && !(A.beta.last.ips > 4.0) ? '<span><i class="zone-i"></i>Approx. range (α uncertain)</span>' : '') + '<span><i class="dia-i"></i>HUMS (predicted)' + (hm ? ' <b>' + fmt(hm.ips, 2) + ' IPS / ' + fdeg(hm.deg) + '°</b>' : '') + '</span>' +
-        (hw2 ? '<span><i class="hw-i"></i>HUMS weights (tool)' + ' <b>' + (A.beta.alphaSrc === "prior" ? '≈ ' : '') + fmt(hw2.ips, 2) + ' IPS / ' + fdeg(hw2.deg) + '°</b></span>' : '') : '');
+      (BETA ? '<span><i class="ring-i"></i>Next (predicted)' + (nextM ? ' <b>' + (nextApx ? '≈ ' : '') + fmt(nextM.ips, 2) + ' IPS / ' + fdeg(nextM.deg) + '°</b>' : '') + '</span>' + (A.beta && A.beta.alphaSrc === "prior" && A.beta.approx && A.beta.approx.userSet && A.pts.length && !(A.beta.last.ips > 4.0) ? '<span><i class="zone-i"></i>Approx. range (α uncertain)</span>' : '') : '') +
+      (hm && A.pts.length ? '<span><i class="dia-i"></i>HUMS (predicted) <b>' + fmt(hm.ips, 2) + ' IPS / ' + fdeg(hm.deg) + '°</b></span>' : '') +
+      (hw2 ? '<span><i class="hw-i"></i>HUMS weights (tool)' + ' <b>' + (A.beta.alphaSrc === "prior" ? '≈ ' : '') + fmt(hw2.ips, 2) + ' IPS / ' + fdeg(hw2.deg) + '°</b></span>' : '');
   }
 
   // ---------- Tabell ----------
@@ -1148,9 +1156,8 @@ var BM = (function () {
   function lst(a) { return a.length ? a.map(wtxt).join(", ") : "–"; }
   function mHTML(m, label) { return '<div class="' + zone(m.ips) + '"><b>' + fmt(m.ips, 2) + '<em>IPS</em></b><small>' + fdeg(m.deg) + '° · ' + label + '</small></div>'; }
   function cpol(z) { return fmt(BM.abs(z), 2) + ' ∠ ' + fmt(BM.arg(z), 1) + '°'; }
-  function drawBeta() {
-    var B = A.beta || { pts: [] };
-    // Tabell per kjøring
+  // HUMS-tabell per kjøring (alltid synlig)
+  function drawHums() {
     var tb = $("bTable");
     var h = '<thead><tr><th>Run</th><th>HUMS pred IPS</th><th>HUMS pred deg</th><th>HUMS rec. weights</th></tr></thead><tbody>';
     S.runs.forEach(function (r, i) {
@@ -1163,6 +1170,9 @@ var BM = (function () {
         '</tr>';
     });
     tb.innerHTML = h + '</tbody>';
+  }
+  function drawBeta() {
+    var B = A.beta || { pts: [] };
     drawModeAcc(B);
     // 1. Over 4,0 IPS: ingen vektforslag
     if (B.last && B.last.ips > 4.0) {
@@ -1466,7 +1476,7 @@ var BM = (function () {
       (nums.length > 1 ? 'Runs ' : 'Run ') + join(nums) + ' measured ' + join(vals) + ' IPS, which is above the 4.0 IPS limit. ' +
       'Index the shaft per AMM 18-12-02 and take a new reading before fitting any weights.</div>';
   }
-  function refresh() { $("engTag").textContent = "Engine " + ENG + " Runs"; $("delRun").textContent = "Remove run " + S.runs.length; $("engTag").className = "eng-tag" + (ENG === 2 ? " e2" : ""); analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); if (BETA) drawBeta(); }
+  function refresh() { $("engTag").textContent = "Engine " + ENG + " Runs"; $("delRun").textContent = "Remove run " + S.runs.length; $("engTag").className = $("humsTag").className = "eng-tag" + (ENG === 2 ? " e2" : ""); analyse(); buildTable(); drawChart(); drawRunLeg(); drawIdx(); drawHums(); if (BETA) drawBeta(); }
   // ---------- MR Ground Track & Balance ----------
   var MRKEY = "vibrasjonsdiagram-mrtb";
   var BLADES = [["Blue", "var(--b-blue)"], ["Red", "var(--b-red)"], ["Black", "var(--b-black)"], ["Yellow", "var(--b-yellow)"]];

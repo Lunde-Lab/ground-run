@@ -29,6 +29,15 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.evaluate(() => localStorage.removeItem('vibrasjonsdiagram-v4-engine2'));
   await pg.reload();
 
+  // HUMS card outside Advanced: table + HUMS point in chart also with Advanced off
+  await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4-engine2', o = JSON.parse(localStorage.getItem(k)); o.runs[6].hp = '0,12'; o.runs[6].hd = '200'; localStorage.setItem(k, JSON.stringify(o)); localStorage.setItem('vibrasjonsdiagram-beta', '0'); });
+  await pg.reload();
+  ok(await pg.isHidden('#betaView') && await pg.isVisible('#bTable button[data-act="hp"]'), 'HUMS table visible with Advanced off');
+  ok((await pg.$$('.hums-dot')).length === 1 && (await txt(pg, '#legend')).includes('HUMS (predicted) 0.12 IPS / 200°') && !(await txt(pg, '#legend')).includes('Next'), 'HUMS point + values in chart with Advanced off, no Next');
+  await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4-engine2', o = JSON.parse(localStorage.getItem(k)); delete o.runs[6].hp; delete o.runs[6].hd; localStorage.setItem(k, JSON.stringify(o)); localStorage.setItem('vibrasjonsdiagram-beta', '1'); });
+  await pg.reload();
+  ok(!(await txt(pg, '#legend')).includes('HUMS'), 'No HUMS legend item without HUMS prediction');
+
   // Use column removed: old use/cyc flags are dropped on load, all runs count
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4-engine2', o = JSON.parse(localStorage.getItem(k)); o.runs[1].use = false; o.runs[2].cyc = false; localStorage.setItem(k, JSON.stringify(o)); });
   await pg.reload();

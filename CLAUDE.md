@@ -2,7 +2,7 @@
 
 Single-page web app for S-92 ground runs, used by helicopter technicians on an **iPad mini 4 (iPadOS 15, Safari 15)**:
 
-- **Engine 1 / Engine 2** – HSS vibration polar chart + runs table (Al/Ti/St set screws), optional **Advanced (BETA)** balance calculator.
+- **Engine 1 / Engine 2** – HSS vibration polar chart + runs table (Al/Ti/St set screws), **HUMS** card (HUMS predicted IPS/deg + rec. weights per run; always visible, HUMS point in chart), optional **Advanced (BETA)** balance calculator.
 - **MR Balance** and **TR Balance** – record forms.
 
 Live: https://lunde-lab.github.io/ground-run/ (GitHub Pages from `main`, root). Installed on iPads via Safari → Add to Home Screen; works offline.

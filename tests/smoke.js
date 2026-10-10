@@ -75,6 +75,7 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); delete o.runs[0].hw; delete o.runs[0].hp; delete o.runs[0].hd; o.runs[0].pos = Array.from({ length: 12 }, () => []); localStorage.setItem(k, JSON.stringify(o)); });
   await pg.reload();
   ok(!(await txt(pg, '#bOpt')).includes('HUMS suggestion'), 'No HUMS suggestion without HUMS weights');
+  ok((await pg.$$('.humsw-dot')).length === 0 && !(await txt(pg, '#legend')).includes('HUMS weights'), 'No HUMS wts point without HUMS weights');
 
   // Above 4.0 IPS -> no suggestions
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); o.runs[0].ips = '4,5'; localStorage.setItem(k, JSON.stringify(o)); });

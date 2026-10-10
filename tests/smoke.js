@@ -38,10 +38,12 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   ok((await txt(pg, '#bTable tr[data-i="0"] button[data-act="hw"]')).trim() === '2 Ti7 St', 'HUMS rec. weights cell shows 2 Ti, 7 St');
   const hw = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4-engine2')).runs[0].hw);
   ok(hw && hw[6][0] === 'St' && hw[1][0] === 'Ti', 'HUMS rec. weights saved');
-  // Accuracy: HUMS pred. on run 1 for weights other than those fitted -> scaled and marked *
+  // Accuracy: HUMS pred. on run 1 -> one summary line, no systematic claim with < 3 comparisons
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4-engine2', o = JSON.parse(localStorage.getItem(k)); o.runs[0].hp = '0,95'; o.runs[0].hd = '290'; localStorage.setItem(k, JSON.stringify(o)); });
   await pg.reload();
-  ok((await txt(pg, '#bAcc')).includes('scaled to the weights fitted'), 'Accuracy scales HUMS pred. when HUMS weights differ from fitted');
+  const md = await txt(pg, '#bMode');
+  ok(/Prediction error \(RMS, 1 run\): HUMS [\d.]+ · tool ([\d.]+|–) IPS/.test(md), 'Accuracy shown as one line (' + md.match(/Prediction error[^\n]*/) + ')');
+  ok(!md.includes('systematically') && !md.includes('historically') && !(await pg.$('#bAcc')), 'No accuracy table, no systematic claim with 1 comparison');
 
   // Use as fitted: run 1 already has weights -> confirm -> pos replaced
   await pg.click('#bTable tr[data-i="0"] button[data-act="hw"]'); await pg.click('#hwUse');

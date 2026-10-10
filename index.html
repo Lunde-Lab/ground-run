@@ -277,13 +277,8 @@ tr.plan td.pv small { display: block; font-size: .65rem; font-weight: 500; color
 .seg4 button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
 .amode .ar { display: flex; flex-wrap: wrap; gap: 4px 20px; font-family: var(--font-data); font-size: .88rem; }
 .amode .ar em { font-style: normal; font-family: var(--font-ui); color: var(--muted); margin-right: 6px; }
-.hnote { font-size: .85rem; color: var(--warn); font-weight: 600; margin: 0; }
-table.acc { min-width: 600px; table-layout: fixed; }
-.acc th, .acc td { height: 42px; font-size: .85rem; font-family: var(--font-data); }
-.acc thead th { font-family: var(--font-ui); height: auto; padding: 6px 4px; line-height: 1.2; font-size: .7rem; }
-.acc td small { color: var(--muted); }
-.accsum { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: .88rem; }
-.accsum b { font-family: var(--font-data); }
+.accl { font-size: .88rem; margin: 0; }
+.accl b { font-family: var(--font-data); }
 .alib { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 12px 14px; }
 .lrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; }
 .lrow label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
@@ -542,7 +537,6 @@ table.btab { min-width: 0; table-layout: fixed; }
     </div>
     <div class="disclaimer"><b>Not verified.</b> For use as a support tool only.</div>
     <div class="amode" id="bMode" hidden></div>
-    <div class="bcard" id="bAcc" hidden></div>
     <div class="avgbox" id="bAvg" hidden></div>
     <div class="tablewrap"><table class="btab" id="bTable"></table></div>
     <div class="bcard" id="bOpt"></div>
@@ -886,28 +880,21 @@ var BM = (function () {
     }
     res.mode = mode; res.alpha = alpha;
     // Treffsikkerhet: HUMS-prediksjon på kjøring k mot målt kjøring k+1, og verktøyets prediksjon med data fram til k
-    var rows = [], sH = 0, sT = 0, nT = 0, eSum = [0, 0];
+    var nH = 0, sH = 0, sT = 0, nT = 0, eSum = [0, 0];
     hl.forEach(function (h) {
       var nx = pts[h.k + 1]; if (!nx) return;
       // HUMS-prediksjonen gjelder HUMS sine anbefalte vekter. Satt på noe annet → skaler med α_HUMS til vektene som faktisk ble satt på
-      var dWf = BM.sub(nx.W, h.p.W), Pf = h.P, adj = false;
-      if (h.a && BM.abs(BM.sub(BM.add(h.p.V, BM.mul(h.a, dWf)), h.P)) > 0.005) { Pf = BM.add(h.p.V, BM.mul(h.a, dWf)); adj = true; }
-      var row = { k: h.p, next: nx, P: BM.toMeas(Pf), adj: adj, meas: { ips: nx.ips, deg: nx.deg } };
-      var eH = BM.sub(nx.V, Pf); row.errH = BM.abs(eH); eSum = BM.add(eSum, eH); sH += row.errH * row.errH;
+      var dWf = BM.sub(nx.W, h.p.W), Pf = h.P;
+      if (h.a && BM.abs(BM.sub(BM.add(h.p.V, BM.mul(h.a, dWf)), h.P)) > 0.005) Pf = BM.add(h.p.V, BM.mul(h.a, dWf));
+      var eH = BM.sub(nx.V, Pf), errH = BM.abs(eH); eSum = BM.add(eSum, eH); sH += errH * errH; nH++;
       var upto = pts.filter(function (q) { return q.i <= h.p.i; }), mk = BM.dfit(upto) || BM.fit(upto.filter(function (q) { return q.use; }));
-      if (mk) {
-        var tp = BM.add(h.p.V, BM.mul(mk.alpha, BM.sub(nx.W, h.p.W)));
-        row.T = BM.toMeas(tp); row.errT = BM.abs(BM.sub(nx.V, tp)); sT += row.errT * row.errT; nT++;
-        row.rmsT = Math.sqrt(sT / nT);
-      }
-      rows.push(row); row.rmsH = Math.sqrt(sH / rows.length);
+      if (mk) { var errT = BM.abs(BM.sub(nx.V, BM.add(h.p.V, BM.mul(mk.alpha, dWf)))); sT += errT * errT; nT++; }
     });
-    res.acc = rows;
-    if (rows.length) {
-      res.rmsH = Math.sqrt(sH / rows.length); res.rmsT = nT ? Math.sqrt(sT / nT) : null;
-      res.meanErrH = [eSum[0] / rows.length, eSum[1] / rows.length];
-      res.systematic = BM.abs(res.meanErrH) > 0.6 * res.rmsH;
-      res.suggestMode = (nT >= 3 && res.rmsT < res.rmsH) ? "egen" : "blandet";
+    res.nAcc = nH;
+    if (nH) {
+      res.rmsH = Math.sqrt(sH / nH); res.rmsT = nT ? Math.sqrt(sT / nT) : null;
+      // Systematisk avvik påstås bare med minst 3 sammenligninger (med 1 er snitt = RMS)
+      res.systematic = nH >= 3 && BM.abs([eSum[0] / nH, eSum[1] / nH]) > 0.6 * res.rmsH;
     }
     if (m) {
       // T = forventet nivå ut fra forrige kjøring og vektendringen
@@ -943,7 +930,6 @@ var BM = (function () {
     res.selN = (SELN && res.per.some(function (x) { return x.n === SELN; })) ? SELN : rn.n;
     res.opt.top = res.opt.byN[res.selN];
     res.bestClean = inc.reduce(function (b, p) { return !b || p.ips < b.ips ? p : b; }, null);
-    if (res.humsNext) { var pm = res.predStd; res.humsDist = BM.abs(BM.sub(BM.fromMeas(res.humsNext.ips, res.humsNext.deg), BM.fromMeas(pm.ips, pm.deg))); }
     return res;
   }
 
@@ -1199,10 +1185,7 @@ var BM = (function () {
     var tb = $("bTable");
     var h = '<thead><tr><th>Use</th><th>Run</th><th>HUMS pred IPS</th><th>HUMS pred deg</th><th>HUMS rec. weights</th></tr></thead><tbody>';
     S.runs.forEach(function (r, i) {
-      var p = B.byI[i], ex = p && !p.use, note = "";
-      if (p && p.avgWarn) note = '<span class="avg">The reading looks like an average – actual level may be approx. ' + fmt(p.Tm.ips, 2) + ' ips</span>';
-      else if (p && !p.use) note = "Not used in fit";
-      if (p && B.last && p.i === B.last.i && B.humsDist !== undefined) note += (note ? "<br>" : "") + "HUMS and Next are " + fmt(B.humsDist, 2) + " IPS apart";
+      var p = B.byI[i], ex = p && !p.use;
       h += '<tr class="' + (ex ? "excl" : "") + '" data-i="' + i + '">' +
         '<td><button type="button" class="tog' + (useOf(r) ? ' on' : '') + '" data-act="use">' + (useOf(r) ? '✓' : '–') + '</button></td>' +
         '<th class="run" scope="row">' + (i + 1) + '</th>' +
@@ -1266,38 +1249,21 @@ var BM = (function () {
     oh += '</div>';
     $("bOpt").innerHTML = oh;
   }
-  function mp(m) { return fmt(m.ips, 2) + ' / ' + fdeg(m.deg) + '°'; }
   function drawModeAcc(B) {
-    var md = $("bMode"), ac = $("bAcc");
-    if (!B.aH) { md.hidden = true; ac.hidden = true; return; }
+    var md = $("bMode");
+    if (!B.aH) { md.hidden = true; return; }
     md.hidden = false;
     var opts = [["egen", "Own data"], ["blandet", "Blended"], ["hums", "HUMS"]];
     var h = '<div class="mtop"><span>α mode</span><div class="seg4" role="radiogroup" aria-label="α mode">' +
       opts.map(function (o) { return '<button type="button" role="radio" data-mode="' + o[0] + '" aria-checked="' + (B.mode === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div></div>';
-    if (B.mode !== "egen") h += '<p class="hnote">HUMS predictions have historically been off on this aircraft</p>';
-    h += '<div class="ar">' + (B.model ? '<span><em>α own data</em>' + cpol(B.model.alpha) + '</span>' : '') +
-      '<span><em>α HUMS mean (' + B.nH + ')</em>' + cpol(B.aH) + '</span>' +
-      (B.alpha ? '<span><em>α in use</em>' + cpol(B.alpha) + '</span>' : '') + '</div>';
+    if (B.alpha) h += '<div class="ar"><span><em>α in use</em>' + cpol(B.alpha) + '</span></div>';
+    // Treffsikkerhet: én linje (HUMS-prediksjon på kjøring k mot målt kjøring k+1)
+    if (B.nAcc) {
+      var n = B.nAcc;
+      h += '<p class="accl">Prediction error (RMS, ' + n + (n === 1 ? ' run' : ' runs') + '): HUMS <b>' + fmt(B.rmsH, 2) + '</b> · tool <b>' + (B.rmsT !== null ? fmt(B.rmsT, 2) : '–') + '</b> IPS</p>';
+      if (B.systematic) h += '<div class="verdict crit">HUMS is systematically off – consider coefficient calibration (AMM 18-12-02, HUMS User Guide ch. 3.5 C)</div>';
+    }
     md.innerHTML = h;
-    // Treffsikkerhet
-    if (!B.acc || !B.acc.length) { ac.hidden = true; return; }
-    ac.hidden = false;
-    var t = '<h3>Prediction accuracy</h3><div class="tablewrap"><table class="acc"><thead><tr><th>HUMS pred. on run</th><th>Measured run</th><th>HUMS predicted</th><th>Tool predicted</th><th>Measured</th><th>Error HUMS</th><th>Error tool</th><th>RMS HUMS</th><th>RMS tool</th></tr></thead><tbody>';
-    B.acc.forEach(function (r) {
-      t += '<tr><td>' + (r.k.i + 1) + '</td><td>' + (r.next.i + 1) + '</td><td>' + mp(r.P) + (r.adj ? '*' : '') + '</td><td>' + (r.T ? mp(r.T) : '–') + '</td><td>' + mp(r.meas) + '</td>' +
-        '<td>' + fmt(r.errH, 2) + '</td><td>' + (r.errT !== undefined ? fmt(r.errT, 2) : '–') + '</td><td>' + fmt(r.rmsH, 2) + '</td><td>' + (r.rmsT !== undefined ? fmt(r.rmsT, 2) : '–') + '</td></tr>';
-    });
-    t += '</tbody></table></div>';
-    if (B.acc.some(function (r) { return r.adj; })) t += '<p class="fine2">* Fitted weights differ from HUMS recommended – HUMS prediction scaled to the weights fitted.</p>';
-    var me = BM.toMeas(B.meanErrH);
-    t += '<div class="accsum"><span>RMS HUMS <b>' + fmt(B.rmsH, 2) + '</b></span><span>RMS tool <b>' + (B.rmsT !== null ? fmt(B.rmsT, 2) : '–') + '</b></span>' +
-      '<span>Mean error vector HUMS <b>' + fmt(me.ips, 2) + ' / ' + fdeg(me.deg) + '°</b></span></div>';
-    t += '<div class="verdict ' + (B.systematic ? 'crit' : 'warn') + '">' + (B.systematic
-      ? 'HUMS is systematically off – consider coefficient calibration (AMM 18-12-02, HUMS User Guide ch. 3.5 C)'
-      : 'HUMS is randomly off – check repeatability') + '</div>';
-    t += '<p class="fine2">Suggested mode: <b>' + (B.suggestMode === "egen" ? 'Own data' : 'Blended') + '</b>' +
-      (B.suggestMode === "egen" ? ' (the tool predicts better than HUMS over at least 3 runs).' : '.') + '</p>';
-    ac.innerHTML = t;
   }
   $("bMode").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-mode]"); if (!b) return;

@@ -32,7 +32,7 @@ Indexing or re-installing the shaft changes `B`. `α` depends mainly on engine s
 `α` from the **difference method** (same as `analyze.py`, §6) over consecutive runs that are both marked **Use**. This removes `B`, which drifts a lot within a job (a global fit of constant `B` + `α` to the HUMS #2 job had ≈ 0.7 IPS leave-one-out error and predicted ≈ 0.7 IPS for a setup that measured 0.14). `B` is shown as the mean of `V − α·W` over used runs.
 
 - Needs at least one step between two used runs with different `W`. Fallback: global least squares over the used runs; otherwise `PRIOR`.
-- α mode (only when HUMS predictions are entered): *Own data* (default), *Blended* `(n·α + 2·α_HUMS)/(n + 2)`, *HUMS*. `α_HUMS` = mean of `(P − V)/(W_new − W)` per run with a HUMS prediction `P`. `W_new` = *HUMS rec. weights* when entered, else the weights fitted after that run. In *Prediction accuracy*, when the fitted weights differ, the HUMS prediction is scaled to the fitted weights with that run's `α_HUMS` (marked `*`).
+- α mode (only when HUMS predictions are entered): *Own data* (default), *Blended* `(n·α + 2·α_HUMS)/(n + 2)`, *HUMS*. `α_HUMS` = mean of `(P − V)/(W_new − W)` per run with a HUMS prediction `P`. `W_new` = *HUMS rec. weights* when entered, else the weights fitted after that run. *Prediction error* (one line under α mode): RMS of HUMS prediction on run k vs. measured run k+1, and the same for the tool (fit with data up to run k). When the fitted weights differ from HUMS rec. weights, the HUMS prediction is first scaled to the fitted weights with that run's `α_HUMS`. "Systematically off" (mean error vector > 0.6 × RMS) is only shown with ≥ 3 comparisons.
 
 ## 4. Average check (not power-cycled runs)
 

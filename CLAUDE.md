@@ -48,8 +48,8 @@ Live: https://lunde-lab.github.io/ground-run/ (GitHub Pages from `main`, root). 
 - Last run < 0.30 → "Within target – no change needed". > 4.0 → index alert, no suggestions.
 - Removed on request – do not reintroduce: page titles/hint texts, Merknad column, manual start-α card, α library per tail number, status line, motor/sensor-offset texts, clock-chart toggles, "Screws fitted after run" legend, "x of 4 weights" picker text, calibration-run card, "Hide runs" button, "Clear table" button (New job clears), per-run Use toggle (all runs count), "looks like an average" check, "Example" button / built-in example data.
 - IPS keypad: digits without decimal point, `1041` → `1.041`.
-- Export asks for tail number + date; "New job" clears all tabs (3 empty runs each). Fresh install starts empty.
-- "Save image" (engine tabs): asks for tail number (3 letters, remembered with the job), then draws a PNG with tail + date/time of Runs + HUMS on a canvas (no libraries) and opens the iPad share sheet (Save Image); falls back to download.
+- "New job" asks for tail number (3 letters, required) + date, then clears all tabs (3 empty runs each). Tail is shown in the top bar (tap to change). Export / Save image use it directly; they only ask if it is missing. Fresh install starts empty.
+- "Save image" (engine tabs): draws a PNG with tail + date/time of Runs + HUMS on a canvas (no libraries) and opens the iPad share sheet (Save Image); falls back to download.
 
 ## Adding job data (improves run-1 suggestions)
 

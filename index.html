@@ -92,13 +92,15 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); pad
 .res .cell small { font-size: .75rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
 .mr-btns { justify-content: flex-end; }
 /* Fanene fyller bredden uten scroll, tilpasset iPad mini (768 × 1024) */
-.topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 4px; border-bottom: 1px solid var(--line); }
+.topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: end; gap: 4px; border-bottom: 1px solid var(--line); }
 .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; overflow: hidden; }
 .themebtn { width: 48px; min-height: 48px; margin-bottom: 4px; padding: 0; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; color: var(--muted); -webkit-tap-highlight-color: transparent; }
 .themebtn:hover { color: var(--fg); }
+.jobbtn { min-width: 64px; min-height: 44px; margin-bottom: 6px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--fg); font-family: var(--font-data); font-size: 1.05rem; font-weight: 700; letter-spacing: .04em; -webkit-tap-highlight-color: transparent; }
+.jobbtn.empty { color: var(--muted); border-style: dashed; font-family: inherit; font-size: .85rem; font-weight: 600; letter-spacing: .02em; }
 .themebtn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .ver { margin: 0; font-family: var(--font-data); font-size: .8rem; color: var(--muted); }
-@media (max-width: 480px) { .topbar, .tabs { gap: 2px; } .tabs button { font-size: .74rem; padding-inline: 2px; } .themebtn { width: 44px; } }
+@media (max-width: 480px) { .topbar, .tabs { gap: 2px; } .tabs button { font-size: .74rem; padding-inline: 2px; } .themebtn { width: 44px; } .jobbtn { min-width: 44px; padding: 0 4px; font-size: .78rem; letter-spacing: 0; } .tabs { grid-template-columns: repeat(4, minmax(0, auto)); } .topbar .tabs button { font-size: .72rem; padding-inline: 1px; } }
 .tabs button { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(.78rem, 3.1vw, 1.4rem); font-weight: 700; letter-spacing: -.01em; min-height: 56px; padding: 8px 4px; border: 0; border-radius: 10px 10px 0 0; background: transparent; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
 .tabs button:hover { color: var(--fg); }
 .tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); background: rgba(var(--accent-rgb), 0.08); }
@@ -473,6 +475,7 @@ table.btab { min-width: 0; table-layout: fixed; }
     <button type="button" role="tab" id="tab3" data-eng="3">MR Balance</button>
     <button type="button" role="tab" id="tab4" data-eng="4">TR Balance</button>
   </nav>
+  <button type="button" id="jobBtn" class="jobbtn" aria-label="Tail number"></button>
   <button type="button" id="themeBtn" class="themebtn" aria-label="Dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><g id="icSun"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"/></g><path id="icMoon" d="M20 14.6A8.3 8.3 0 0 1 9.4 4 8.3 8.3 0 1 0 20 14.6Z"/></svg></button>
   </div>
 
@@ -564,6 +567,7 @@ table.btab { min-width: 0; table-layout: fixed; }
 <div class="modal" id="exModal" role="dialog" aria-modal="true" aria-labelledby="exTitle" hidden>
   <div class="sheet">
     <h3 id="exTitle" style="margin:0;font-size:1.15rem;font-weight:600">Export data</h3>
+    <p class="nm-hint" id="exText" style="text-align:left;margin:0" hidden></p>
     <label class="exf">Tail number<input id="exTail" type="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="3" placeholder="ABC" enterkeyhint="done"></label>
     <label class="exf" id="exDateRow">Date<input id="exDate" type="date"></label>
     <p class="ex-err" id="exErr" hidden></p>
@@ -1643,23 +1647,41 @@ var BM = (function () {
   function exMsg(t) { var m = $("exportMsg"); m.textContent = t; m.hidden = !t; }
   var JOBKEY = "vibrasjonsdiagram-job", JOB = { tail: "", date: "" };
   try { var jj = JSON.parse(localStorage.getItem(JOBKEY)); if (jj) JOB = { tail: jj.tail || "", date: jj.date || "" }; } catch (e) {}
-  function saveJob() { try { localStorage.setItem(JOBKEY, JSON.stringify(JOB)); } catch (e) {} }
+  function saveJob() { try { localStorage.setItem(JOBKEY, JSON.stringify(JOB)); } catch (e) {} showJob(); }
+  function tailOk() { return /^[A-Z]{3}$/.test(JOB.tail || ""); }
+  // Tail number i toppfeltet: alltid synlig, trykk for å endre
+  function showJob() {
+    var b = $("jobBtn"), ok = tailOk();
+    b.textContent = ok ? JOB.tail : "Tail"; b.classList.toggle("empty", !ok);
+    b.setAttribute("aria-label", ok ? "Tail number " + JOB.tail + ", change" : "Set tail number");
+  }
   function today() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   var exEl = $("exModal"), exTail = $("exTail"), exDate = $("exDate");
   function exErr(t) { var m = $("exErr"); m.textContent = t; m.hidden = !t; }
   function exClose() { exEl.hidden = true; exErr(""); exTail.classList.remove("bad"); exDate.classList.remove("bad"); }
-  // Samme dialog for Export (hale + dato) og Save image (bare hale; bildet får dato og klokkeslett)
-  var exMode = "export";
+  // Én dialog for tail number + dato: New job (krever tail), Job (toppfeltet), og Export / Save image når tail mangler.
+  // Save image trenger bare tail; bildet får dato og klokkeslett.
+  var exMode = "export", EXM = {
+    "new": ["Start new job", "Start new job", "All runs in Engine 1, Engine 2, MR Balance and TR Balance will be deleted. Export first if you need the data."],
+    job: ["Job", "Save", ""],
+    export: ["Export data", "Export", ""],
+    image: ["Save image", "Save", ""]
+  };
   function exOpen(mode) {
     closePicker(); exMsg(""); exMode = mode;
-    var img = mode === "image";
-    $("exTitle").textContent = img ? "Save image" : "Export data"; $("exGo").textContent = img ? "Save" : "Export";
-    $("exDateRow").hidden = img;
-    exTail.value = JOB.tail || ""; exDate.value = JOB.date || today();
+    var m = EXM[mode];
+    $("exTitle").textContent = m[0]; $("exGo").textContent = m[1]; $("exText").textContent = m[2]; $("exText").hidden = !m[2];
+    $("exGo").classList.toggle("primary", mode !== "new"); $("exGo").classList.toggle("danger", mode === "new");
+    $("exDateRow").hidden = mode === "image";
+    exTail.value = mode === "new" ? "" : JOB.tail || ""; exDate.value = mode === "new" ? today() : JOB.date || today();
     exErr(""); exTail.classList.remove("bad"); exDate.classList.remove("bad");
     exEl.hidden = false; exTail.focus();
   }
-  $("exportBtn").addEventListener("click", function () { exOpen("export"); });
+  showJob();
+  $("jobBtn").addEventListener("click", function () { exOpen("job"); });
+  $("exportBtn").addEventListener("click", function () {
+    if (tailOk() && JOB.date) { closePicker(); exMsg(""); doExport(JOB.tail, JOB.date); } else exOpen("export");
+  });
   $("exCancel").addEventListener("click", exClose);
   exEl.addEventListener("click", function (e) { if (e.target === exEl) exClose(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !exEl.hidden) exClose(); });
@@ -1670,8 +1692,11 @@ var BM = (function () {
     if (!/^[A-Z]{3}$/.test(tail)) { exTail.classList.add("bad"); exErr("Tail number must be three letters."); exTail.focus(); return; }
     if (exMode === "image") { JOB.tail = tail; saveJob(); exClose(); saveImage(tail); return; }
     if (!date) { exErr("Select a date."); return; }
-    JOB = { tail: tail, date: date }; saveJob(); exClose();
-    doExport(tail, date);
+    var mode = exMode; exClose();
+    if (mode === "new") newJob();
+    JOB = { tail: tail, date: date }; saveJob();
+    if (mode === "export") doExport(tail, date);
+    if (mode === "new") exMsg("New job started (" + tail + ").");
   });
   function doExport(tail, date) {
     var d = new Date();
@@ -1757,7 +1782,7 @@ var BM = (function () {
     txt("Al 0.96 · Ti 1.58 · St 2.54 IPS", P, y + 30, "15px " + UI, COL.muted);
     return cv;
   }
-  $("saveImg").addEventListener("click", function () { exOpen("image"); });
+  $("saveImg").addEventListener("click", function () { if (tailOk()) { closePicker(); exMsg(""); saveImage(JOB.tail); } else exOpen("image"); });
   // Kalles direkte fra Save-trykket i dialogen, så delingen fortsatt er et brukertrykk (Safari)
   function saveImage(tail) {
     var now = new Date(), hm = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
@@ -1808,7 +1833,7 @@ var BM = (function () {
   });
 
   // ---------- app version (set by scripts/bump-sw.sh on each release) ----------
-  var APP_VER = "1.9", APP_DATE = "11 Oct 2026";
+  var APP_VER = "1.10", APP_DATE = "11 Oct 2026";
   $("appVer").textContent = "v" + APP_VER + " · " + APP_DATE;
 
   // ---------- Light / dark ----------
@@ -1834,18 +1859,16 @@ var BM = (function () {
   });
 
   // ---------- Ny jobb ----------
-  $("newJob").addEventListener("click", function () {
-    ask("Start a new job?", "All runs in Engine 1, Engine 2, MR Balance and TR Balance will be deleted. Export first if you need the data.", "Start new job", function () {
-      ENGINES[1] = tidy(blank()); ENGINES[2] = tidy(blank());
-      try { localStorage.setItem(KEYS[1], JSON.stringify(ENGINES[1])); localStorage.setItem(KEYS[2], JSON.stringify(ENGINES[2])); } catch (e) {}
-      S = ENGINES[ENG]; SELN = null;
-      M = blankMR(); saveMR(); buildMR();
-      T = blankTR(); saveTR(); buildTR();
-      JOB = { tail: "", date: "" }; saveJob();
-      exMsg("New job started.");
-      refresh();
-    });
-  });
+  // New job krever tail number (dialogen over); newJob() kalles derfra
+  $("newJob").addEventListener("click", function () { exOpen("new"); });
+  function newJob() {
+    ENGINES[1] = tidy(blank()); ENGINES[2] = tidy(blank());
+    try { localStorage.setItem(KEYS[1], JSON.stringify(ENGINES[1])); localStorage.setItem(KEYS[2], JSON.stringify(ENGINES[2])); } catch (e) {}
+    S = ENGINES[ENG]; SELN = null;
+    M = blankMR(); saveMR(); buildMR();
+    T = blankTR(); saveTR(); buildTR();
+    refresh();
+  }
 })();
 </script>
 

@@ -131,9 +131,32 @@ const E2JOB = (() => {
   const [dlImg] = await Promise.all([pg.waitForEvent('download'), pg.click('#exGo')]);
   ok(/^ground-run-ABC-engine1-\d{4}-\d\d-\d\d-\d{4}\.png$/.test(dlImg.suggestedFilename()), 'Save image downloads PNG with tail + date/time (' + dlImg.suggestedFilename() + ')');
   ok(JSON.parse(await pg.evaluate(() => localStorage.getItem('vibrasjonsdiagram-job'))).tail === 'ABC', 'Tail number remembered for next save/export');
+  ok((await txt(pg, '#jobBtn')) === 'ABC', 'Tail number shown in top bar');
+  const [dlImg2] = await Promise.all([pg.waitForEvent('download'), pg.click('#saveImg')]);
+  ok(await pg.isHidden('#exModal') && /^ground-run-ABC-/.test(dlImg2.suggestedFilename()), 'Save image with tail set saves directly, no dialog');
   await pg.click('#exportBtn');
-  ok((await txt(pg, '#exTitle')) === 'Export data' && !(await pg.isHidden('#exDateRow')) && (await pg.inputValue('#exTail')) === 'ABC', 'Export dialog still has date and prefilled tail');
+  ok((await txt(pg, '#exTitle')) === 'Export data' && !(await pg.isHidden('#exDateRow')) && (await pg.inputValue('#exTail')) === 'ABC', 'Export without job date asks, tail prefilled');
   await pg.click('#exCancel');
+  // Top-bar tail button edits tail + date; Export then goes straight through
+  await pg.click('#jobBtn');
+  ok((await txt(pg, '#exTitle')) === 'Job', 'Top-bar tail button opens Job dialog');
+  await pg.fill('#exTail', 'abd'); await pg.fill('#exDate', '2026-10-01'); await pg.click('#exGo');
+  ok((await txt(pg, '#jobBtn')) === 'ABD', 'Job dialog changes tail');
+  const [dlEx] = await Promise.all([pg.waitForEvent('download'), pg.click('#exportBtn')]);
+  ok(await pg.isHidden('#exModal') && dlEx.suggestedFilename() === 'ground-run-ABD-2026-10-01.json', 'Export with tail + date saves directly (' + dlEx.suggestedFilename() + ')');
+  // New job requires tail number
+  await pg.click('#newJob');
+  ok((await txt(pg, '#exTitle')) === 'Start new job' && (await pg.inputValue('#exTail')) === '' && (await txt(pg, '#exText')).includes('will be deleted'), 'New job asks for tail number with warning');
+  await pg.click('#exGo');
+  ok(!(await pg.isHidden('#exModal')) && (await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4')).runs[0].ips)) === '1,25', 'New job without tail number does nothing');
+  await pg.click('#exCancel');
+  ok((await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4')).runs[0].ips)) === '1,25', 'Cancel keeps the job');
+  const keep = await pg.evaluate(() => [localStorage.getItem('vibrasjonsdiagram-v4'), localStorage.getItem('vibrasjonsdiagram-v4-engine2'), localStorage.getItem('vibrasjonsdiagram-mrtb'), localStorage.getItem('vibrasjonsdiagram-trbal'), localStorage.getItem('vibrasjonsdiagram-job')]);
+  await pg.click('#newJob'); await pg.fill('#exTail', 'xyz'); await pg.click('#exGo');
+  const nj = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4')));
+  ok(nj.runs.length === 3 && nj.runs.every(r => !r.ips) && (await txt(pg, '#jobBtn')) === 'XYZ', 'New job clears runs and sets tail number');
+  await pg.evaluate(k => { ['vibrasjonsdiagram-v4', 'vibrasjonsdiagram-v4-engine2', 'vibrasjonsdiagram-mrtb', 'vibrasjonsdiagram-trbal', 'vibrasjonsdiagram-job'].forEach((n, i) => k[i] === null ? localStorage.removeItem(n) : localStorage.setItem(n, k[i])); }, keep);
+  await pg.reload();
 
   // Above 4.0 IPS -> no suggestions
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); o.runs[0].ips = '4,5'; localStorage.setItem(k, JSON.stringify(o)); });

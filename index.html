@@ -92,7 +92,13 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); pad
 .res .cell small { font-size: .75rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
 .mr-btns { justify-content: flex-end; }
 /* Fanene fyller bredden uten scroll, tilpasset iPad mini (768 × 1024) */
-.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; border-bottom: 1px solid var(--line); overflow: hidden; }
+.topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; overflow: hidden; }
+.themebtn { width: 48px; min-height: 48px; margin-bottom: 4px; padding: 0; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; color: var(--muted); -webkit-tap-highlight-color: transparent; }
+.themebtn:hover { color: var(--fg); }
+.themebtn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.appver { font-variant-numeric: tabular-nums; opacity: .8; }
+@media (max-width: 480px) { .topbar, .tabs { gap: 2px; } .tabs button { font-size: .74rem; padding-inline: 2px; } .themebtn { width: 44px; } }
 .tabs button { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(.78rem, 3.1vw, 1.4rem); font-weight: 700; letter-spacing: -.01em; min-height: 56px; padding: 8px 4px; border: 0; border-radius: 10px 10px 0 0; background: transparent; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
 .tabs button:hover { color: var(--fg); }
 .tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); background: rgba(var(--accent-rgb), 0.08); }
@@ -456,12 +462,15 @@ table.btab { min-width: 0; table-layout: fixed; }
 <body>
 
 <div class="wrap">
+  <div class="topbar">
   <nav class="tabs" role="tablist" aria-label="Engine">
     <button type="button" role="tab" id="tab1" data-eng="1">Engine 1</button>
     <button type="button" role="tab" id="tab2" data-eng="2">Engine 2</button>
     <button type="button" role="tab" id="tab3" data-eng="3">MR Balance</button>
     <button type="button" role="tab" id="tab4" data-eng="4">TR Balance</button>
   </nav>
+  <button type="button" id="themeBtn" class="themebtn" aria-label="Dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><g id="icSun"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"/></g><path id="icMoon" d="M20 14.6A8.3 8.3 0 0 1 9.4 4 8.3 8.3 0 1 0 20 14.6Z"/></svg></button>
+  </div>
 
   <section class="card mr" id="trView" aria-label="Tail Rotor Balance" hidden>
     <div class="mr-list" id="trList"></div>
@@ -533,9 +542,10 @@ table.btab { min-width: 0; table-layout: fixed; }
 
   <div class="export">
     <div class="btns"><button type="button" id="newJob">New job</button><button type="button" id="exportBtn">Export data (JSON)</button><button type="button" id="saveImg">Save image</button><button type="button" id="importBtn">Import data (JSON)</button></div>
-    <div class="btns sub"><button type="button" id="loadEx" class="small">Example</button><button type="button" id="themeBtn" class="small">Light mode</button></div>
+    <div class="btns sub"><button type="button" id="loadEx" class="small">Example</button></div>
     <input type="file" id="importFile" accept=".json,application/json" hidden>
     <p class="fine2" id="exportMsg" hidden></p>
+    <p class="fine2 appver" id="appVer"></p>
   </div>
 </div>
 
@@ -1794,13 +1804,22 @@ var BM = (function () {
     rd.readAsText(f);
   });
 
+  // ---------- App version (set by scripts/bump-sw.sh on each release) ----------
+  var APP_VER = "1.1", APP_DATE = "2026-10-11";
+  $("appVer").textContent = "Ground Run v" + APP_VER + " · " + APP_DATE;
+
   // ---------- Light / dark ----------
   var THEMEKEY = "vibrasjonsdiagram-theme", themeBtn = $("themeBtn");
   function isDark() {
     var t = document.documentElement.getAttribute("data-theme");
     return t ? t === "dark" : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
   }
-  function themeLabel() { themeBtn.textContent = isDark() ? "Light mode" : "Dark mode"; }
+  // Ikon viser modusen man bytter til: sol i mørk modus, måne i lys modus
+  function themeLabel() {
+    var d = isDark();
+    $("icSun").style.display = d ? "" : "none"; $("icMoon").style.display = d ? "none" : "";
+    themeBtn.setAttribute("aria-label", d ? "Light mode" : "Dark mode"); themeBtn.title = themeBtn.getAttribute("aria-label");
+  }
   try { var th = localStorage.getItem(THEMEKEY); if (th === "light" || th === "dark") document.documentElement.setAttribute("data-theme", th); } catch (e) {}
   themeLabel();
   themeBtn.addEventListener("click", function () {

@@ -116,6 +116,14 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   ok(/based on (one|\d+) earlier jobs? on engine/.test(await txt(pg, '#bOpt')), 'Without PRIOR.hums.use, run 1 uses prior α (HUMS entered)');
   fs.unlinkSync(tmp);
 
+  // Version line + theme icon button in the top bar
+  ok(/^Ground Run v\d+\.\d+ · \d{4}-\d\d-\d\d$/.test(await txt(pg, '#appVer')), 'App version and date shown');
+  const th0 = await pg.evaluate(() => document.documentElement.getAttribute('data-theme') || ''), lb0 = await pg.getAttribute('#themeBtn', 'aria-label');
+  await pg.click('#themeBtn');
+  const th1 = await pg.evaluate(() => document.documentElement.getAttribute('data-theme'));
+  ok(th1 && th1 !== th0 && (await pg.getAttribute('#themeBtn', 'aria-label')) !== lb0 && !!(await pg.$('.topbar #themeBtn svg')), 'Theme icon button in top bar toggles theme');
+  await pg.click('#themeBtn');
+
   // MR / TR tabs render
   await pg.click('#tab3'); ok(await pg.isVisible('#mrView'), 'MR Balance tab visible');
   await pg.click('#tab4'); ok(await pg.isVisible('#trView'), 'TR Balance tab visible');

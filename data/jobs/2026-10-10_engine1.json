@@ -1,0 +1,10 @@
+{
+  "engine": 1,
+  "date": "2026-10-10",
+  "note": "App export. Start weights from previous balance. Run 1 within limit (0.322); swapped 8 Ti/9 Al -> 8 Al/9 Ti as HUMS recommended. Run 2 within target.",
+  "start": ["5 Al", "8 Ti", "9 Al"],
+  "runs": [
+    { "ips": 0.322, "deg": 40,  "after": ["5 Al", "8 Al", "9 Ti"], "hums": [0.042, 195] },
+    { "ips": 0.112, "deg": 295, "after": [], "note": "within target" }
+  ]
+}

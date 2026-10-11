@@ -97,6 +97,8 @@ const E2JOB = (() => {
   ok(opt.includes('Run 1 suggestion'), 'Run-1 suggestion banner shown');
   ok((await pg.$$('#bOpt .srow:not(.back)')).length >= 1, 'Run-1 suggestions listed');
   ok(/Range \d\.\d\d–\d\.\d\d/.test(opt), 'Suggestions show a range');
+  ok((await pg.$$eval('#bOpt .srow .sips', els => els.every(e => /\d+°/.test(e.textContent)))), 'Every suggestion row shows predicted/measured degrees');
+  ok(/Recommended: \d screws? – fewest screws below 0\.30|None below 0\.30/.test(opt) && !(await pg.$('.pern button.rec')), 'Recommendation as one line, recommended button styled like the others');
 
   // HUMS rec. weights on last run -> 'HUMS suggestion' row in Suggestions, Apply copies them to the run's weights
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)), E = Array.from({ length: 12 }, () => []); E[3] = ['St']; o.runs[0].hw = E; o.runs[0].hp = '0,20'; o.runs[0].hd = '90'; localStorage.setItem(k, JSON.stringify(o)); });

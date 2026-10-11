@@ -377,13 +377,12 @@ table.btab { min-width: 0; table-layout: fixed; }
 .pern button { min-height: 52px; padding: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-data); font-weight: 700; font-size: .95rem; line-height: 1.2; }
 .pern button small { font-family: var(--font-ui); font-size: .68rem; font-weight: 500; color: var(--muted); }
 .pern button span { font-family: var(--font-ui); font-size: .72rem; font-weight: 500; color: var(--muted); }
-.pern button.rec { border-color: var(--c); box-shadow: inset 0 -4px 0 var(--c); }
 .pern button[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .pern button[aria-checked="true"] span, .pern button[aria-checked="true"] small { color: var(--bg); }
-.rech { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
-.rech .rl2 { font-weight: 600; }
-.rech b { font-family: var(--font-data); font-size: 1.5rem; color: var(--c); line-height: 1.1; }
-.rech .rs { font-size: .85rem; color: var(--muted); }
+.rech { padding-top: 0; }
+.recl { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 6px; font-size: .9rem; color: var(--muted); }
+.recl i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; transform: translateY(-1px); }
+.recl b { color: var(--fg); font-weight: 600; }
 .sugl { display: flex; flex-direction: column; }
 .srow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
 .srow:first-child { border-top: 0; }
@@ -395,6 +394,8 @@ table.btab { min-width: 0; table-layout: fixed; }
 .sips { font-family: var(--font-data); font-size: 1.15rem; font-weight: 700; color: var(--c); text-align: right; min-width: 64px; line-height: 1.15; }
 .sips small, .sips .unc { display: block; font-family: var(--font-ui); font-size: .7rem; font-weight: 500; color: var(--muted); white-space: nowrap; }
 .sips .unc { font-family: var(--font-data); font-weight: 600; }
+.sips .sdeg { font-size: .85em; color: var(--fg); white-space: nowrap; }
+@media (max-width: 560px) { .sips .sdeg { display: block; } .sips .sdeg b { display: none; } }
 .ssub { font-size: .8rem; font-weight: 600; color: var(--muted); padding: 12px 0 4px; }
 .ssub + .srow { border-top: 1px solid var(--line); }
 .pern button i { font-style: normal; }
@@ -1123,10 +1124,10 @@ var BM = (function () {
     if (!setup.length) return '<span class="chip2" style="--c:var(--muted);--cr:var(--muted-rgb)">no screws</span>';
     return setup.map(function (w) { return '<span class="chip2 ' + w[1] + '">' + wtxt(w) + ' <small>' + fmt(BM.MAG[w[1]], 2) + ' IPS</small></span>'; }).join("");
   }
-  // Én forslagslinje: rang · skruer · IPS (+ område) · Apply
+  // Én forslagslinje: rang · skruer · IPS / grader (+ område) · Apply
   function srow(o) {
     return '<div class="srow ' + (o.cls || '') + '"><span class="rk">' + o.rk + '</span><div class="chips2">' + chips3(o.setup) + '</div>' +
-      '<div class="sips ' + zone(o.ips) + '">' + fmt(o.ips, o.d || 2) + '<small>' + o.lbl + '</small>' +
+      '<div class="sips ' + zone(o.ips) + '">' + fmt(o.ips, o.d || 2) + (o.deg != null ? '<span class="sdeg"><b> / </b>' + fdeg(o.deg) + '°</span>' : '') + '<small>' + o.lbl + '</small>' +
       (o.rng ? '<span class="unc"><i>Range </i>' + fmt(o.rng[0], 2) + '–' + fmt(o.rng[1], 2) + '</span>' : '') + '</div>' +
       (o.apply !== undefined ? '<button type="button" class="' + (o.primary ? 'primary' : '') + '" data-apply="' + o.apply + '">Apply</button>' : '<span></span>') + '</div>';
   }
@@ -1168,7 +1169,7 @@ var BM = (function () {
     // Innenfor target: ingen endring
     if (B.last.ips < GOAL) {
       $("bOpt").innerHTML = '<div class="recn good"><div><span class="rl2">Within target</span><b>' + fmt(B.last.ips, 2) + '</b><span class="rs">IPS on run ' + (B.last.i + 1) + ' · below 0.30 – no change needed</span></div></div>' +
-        '<div class="sugl">' + srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, d: 3, lbl: 'measured' }) + '</div>';
+        '<div class="sugl">' + srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, deg: B.last.deg, d: 3, lbl: 'measured' }) + '</div>';
       return;
     }
     // Optimering
@@ -1181,26 +1182,28 @@ var BM = (function () {
       return [lo, hi];
     }
     var oh = isPrior ? '<div class="stdwarn">Run 1 suggestion – based on ' + (B.priorHums ? 'the HUMS prediction, calibrated from ' + PRIOR[ENG].hums.jobs + ' earlier jobs' : (PRIOR[ENG].jobs === 1 ? 'one earlier job' : PRIOR[ENG].jobs + ' earlier jobs')) + ' on engine ' + ENG + '. Very uncertain: confirm with run 2.</div>' : '';
-    oh += '<div class="rech ' + (recOk ? 'good' : 'crit') + '"><span class="rl2">Recommended</span><b>' + rec.n + (rec.n === 1 ? ' screw' : ' screws') + '</b><span class="rs">' +
-      (recOk ? 'fewest screws below 0.30 · predicted ' : 'none below 0.30 · best ') + fmt(rec.score, 2) + ' IPS</span></div>' +
+    oh += '<div class="ssub rech">Number of screws</div>' +
       '<div class="pern ' + (recOk ? 'good' : 'crit') + '" role="radiogroup" aria-label="Number of screws in suggestions">' + per.map(function (x) {
-        return '<button type="button" role="radio" aria-checked="' + (x.n === B.selN) + '" data-n="' + x.n + '" class="' + (x.n === rec.n ? 'rec' : '') + '"' + (x.n === rec.n ? ' aria-label="' + x.n + ' screws, recommended"' : '') + '>' +
-          '<span>' + x.n + '<i>' + (x.n === 1 ? ' screw' : ' screws') + '</i></span><strong>' + fmt(x.score, 2) + '</strong></button>'; }).join('') + '</div>';
+        return '<button type="button" role="radio" aria-checked="' + (x.n === B.selN) + '" data-n="' + x.n + '"' + (x.n === rec.n ? ' aria-label="' + x.n + ' screws, recommended"' : '') + '>' +
+          '<span>' + x.n + '<i>' + (x.n === 1 ? ' screw' : ' screws') + '</i></span><strong>' + fmt(x.score, 2) + '</strong></button>'; }).join('') + '</div>' +
+      '<p class="recl ' + (recOk ? 'good' : 'crit') + '"><i></i><span>' + (recOk
+        ? 'Recommended: <b>' + rec.n + (rec.n === 1 ? ' screw' : ' screws') + '</b> – fewest screws below 0.30'
+        : 'None below 0.30 – best is <b>' + rec.n + (rec.n === 1 ? ' screw' : ' screws') + '</b> (' + fmt(rec.score, 2) + ' IPS)') + '</span></p>';
     oh += '<div class="sugl">';
     B.opt.top.forEach(function (t, k) {
       var worst = t.preds.reduce(function (a, b) { return b.ips > a.ips ? b : a; });
-      oh += srow({ rk: k + 1, cls: k === 0 ? 'best' : '', setup: t.setup, ips: worst.ips, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(t.setup) : null, apply: k, primary: k === 0 });
+      oh += srow({ rk: k + 1, cls: k === 0 ? 'best' : '', setup: t.setup, ips: worst.ips, deg: worst.deg, lbl: isPrior ? 'approx.' : 'predicted', rng: isPrior ? rng(t.setup) : null, apply: k, primary: k === 0 });
     });
     // HUMS sine anbefalte vekter for siste kjøring, med verktøyets prediksjon
     if (B.humsW) {
       oh += '<div class="ssub">HUMS suggestion' + (B.humsNext ? ' · HUMS predicts ' + fmt(B.humsNext.ips, 2) + ' IPS' : '') + '</div>' +
-        srow({ rk: 'HUMS', cls: 'back', setup: B.humsW.setup, ips: B.humsW.pred.ips, lbl: isPrior ? 'IPS approx.' : 'IPS', rng: isPrior ? rng(B.humsW.setup) : null, apply: 'hums' });
+        srow({ rk: 'HUMS', cls: 'back', setup: B.humsW.setup, ips: B.humsW.pred.ips, deg: B.humsW.pred.deg, lbl: isPrior ? 'approx.' : 'predicted', rng: isPrior ? rng(B.humsW.setup) : null, apply: 'hums' });
     }
     oh += '<div class="ssub">Go back</div>' +
-      srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, lbl: 'measured', apply: 'keep' });
+      srow({ rk: 'Run ' + (B.last.i + 1), cls: 'back', setup: B.last.setup, ips: B.last.ips, deg: B.last.deg, lbl: 'measured', apply: 'keep' });
     if (B.bestClean && B.bestClean.i !== B.last.i) {
       var bc = B.bestClean;
-      oh += srow({ rk: 'Run ' + (bc.i + 1), cls: 'back', setup: bc.setup, ips: bc.ips, d: 3, lbl: 'best run', apply: 'back' });
+      oh += srow({ rk: 'Run ' + (bc.i + 1), cls: 'back', setup: bc.setup, ips: bc.ips, deg: bc.deg, d: 3, lbl: 'best run', apply: 'back' });
     }
     oh += '</div>';
     $("bOpt").innerHTML = oh;
@@ -1785,7 +1788,7 @@ var BM = (function () {
   });
 
   // ---------- App version (set by scripts/bump-sw.sh on each release) ----------
-  var APP_VER = "1.4", APP_DATE = "2026-10-11";
+  var APP_VER = "1.5", APP_DATE = "2026-10-11";
   $("appVer").textContent = "Ground Run v" + APP_VER + " · " + APP_DATE;
 
   // ---------- Light / dark ----------

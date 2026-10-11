@@ -565,7 +565,7 @@ table.btab { min-width: 0; table-layout: fixed; }
   <div class="sheet">
     <h3 id="exTitle" style="margin:0;font-size:1.15rem;font-weight:600">Export data</h3>
     <label class="exf">Tail number<input id="exTail" type="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="3" placeholder="ABC" enterkeyhint="done"></label>
-    <label class="exf">Date<input id="exDate" type="date"></label>
+    <label class="exf" id="exDateRow">Date<input id="exDate" type="date"></label>
     <p class="ex-err" id="exErr" hidden></p>
     <div class="btns end"><button type="button" id="exCancel">Cancel</button><button type="button" class="primary" id="exGo">Export</button></div>
   </div>
@@ -1648,12 +1648,18 @@ var BM = (function () {
   var exEl = $("exModal"), exTail = $("exTail"), exDate = $("exDate");
   function exErr(t) { var m = $("exErr"); m.textContent = t; m.hidden = !t; }
   function exClose() { exEl.hidden = true; exErr(""); exTail.classList.remove("bad"); exDate.classList.remove("bad"); }
-  $("exportBtn").addEventListener("click", function () {
-    closePicker(); exMsg("");
+  // Samme dialog for Export (hale + dato) og Save image (bare hale; bildet får dato og klokkeslett)
+  var exMode = "export";
+  function exOpen(mode) {
+    closePicker(); exMsg(""); exMode = mode;
+    var img = mode === "image";
+    $("exTitle").textContent = img ? "Save image" : "Export data"; $("exGo").textContent = img ? "Save" : "Export";
+    $("exDateRow").hidden = img;
     exTail.value = JOB.tail || ""; exDate.value = JOB.date || today();
     exErr(""); exTail.classList.remove("bad"); exDate.classList.remove("bad");
     exEl.hidden = false; exTail.focus();
-  });
+  }
+  $("exportBtn").addEventListener("click", function () { exOpen("export"); });
   $("exCancel").addEventListener("click", exClose);
   exEl.addEventListener("click", function (e) { if (e.target === exEl) exClose(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !exEl.hidden) exClose(); });
@@ -1662,6 +1668,7 @@ var BM = (function () {
     var tail = exTail.value.trim().toUpperCase(), date = exDate.value;
     exTail.classList.toggle("bad", !tail); exDate.classList.toggle("bad", !date);
     if (!/^[A-Z]{3}$/.test(tail)) { exTail.classList.add("bad"); exErr("Tail number must be three letters."); exTail.focus(); return; }
+    if (exMode === "image") { JOB.tail = tail; saveJob(); exClose(); saveImage(tail); return; }
     if (!date) { exErr("Select a date."); return; }
     JOB = { tail: tail, date: date }; saveJob(); exClose();
     doExport(tail, date);
@@ -1693,7 +1700,7 @@ var BM = (function () {
   exTail.addEventListener("input", function () { exTail.value = exTail.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 3); });
 
   // ---------- Bilde av Runs + HUMS (backup som kan leses uten appen) ----------
-  function runsImage() {
+  function runsImage(tail, stamp) {
     var rows = [], W = 1060, P = 30, RH = 44, HH = 30, cv = document.createElement("canvas"), c = cv.getContext("2d");
     var UI = "Barlow, system-ui, -apple-system, sans-serif", DATA = "'JetBrains Mono', Menlo, ui-monospace, monospace";
     var COL = { fg: "#0e1b23", muted: "#566772", line: "#d3dce2", head: "#f1f6f8", good: "#14935c", warn: "#c97a00", crit: "#d02b2b", Al: "#007f94", Ti: "#c97a00", St: "#4f606b" };
@@ -1718,9 +1725,9 @@ var BM = (function () {
       for (;;) { c.font = "600 " + fs + "px " + DATA; var tw = 0; list.forEach(function (w) { tw += c.measureText(w[0] + " " + w[1]).width + sep; }); if (tw <= wmax - 8 || fs <= 11) break; fs--; }
       var xx = x0 + 8; list.forEach(function (w) { txt(w[0] + " " + w[1], xx, y0, "600 " + fs + "px " + DATA, COL[w[1]]); xx += c.measureText(w[0] + " " + w[1]).width + sep; });
     }
-    var now = new Date(), stamp = today() + " " + String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
     txt("Engine " + ENG + " Runs", P, 40, "700 28px " + UI, ENG === 2 ? "#7a4fc9" : COL.Al);
-    txt([JOB.tail, stamp].filter(Boolean).join("  ·  "), W - P, 40, "500 18px " + UI, COL.muted, "right");
+    if (tail) txt(tail, W - P, 40, "700 28px " + DATA, COL.fg, "right");
+    txt(stamp, W - P, 74, "500 16px " + DATA, COL.muted, "right");
     txt("Ground Run · HSS · Target < 0.30 IPS · weights in row k fitted after run k", P, 74, "15px " + UI, COL.muted);
     // Overskrift: gruppe + kolonner
     c.fillStyle = COL.head; c.fillRect(P, top, W - 2 * P, HH * 2);
@@ -1750,9 +1757,11 @@ var BM = (function () {
     txt("Al 0.96 · Ti 1.58 · St 2.54 IPS", P, y + 30, "15px " + UI, COL.muted);
     return cv;
   }
-  $("saveImg").addEventListener("click", function () {
-    closePicker(); exMsg("");
-    var url = runsImage().toDataURL("image/png"), name = "ground-run-engine" + ENG + (JOB.tail ? "-" + JOB.tail : "") + "-" + today() + ".png";
+  $("saveImg").addEventListener("click", function () { exOpen("image"); });
+  // Kalles direkte fra Save-trykket i dialogen, så delingen fortsatt er et brukertrykk (Safari)
+  function saveImage(tail) {
+    var now = new Date(), hm = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    var url = runsImage(tail, today() + " " + hm).toDataURL("image/png"), name = "ground-run-" + tail + "-engine" + ENG + "-" + today() + "-" + hm.replace(":", "") + ".png";
     // Synkront fra data-URL slik at delingen skjer i samme brukertrykk (Safari krever det)
     var bin = atob(url.split(",")[1]), u8 = new Uint8Array(bin.length);
     for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
@@ -1766,7 +1775,7 @@ var BM = (function () {
       var a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
       exMsg("Saved as " + name + ".");
     } catch (x) { exMsg("Saving images is not available here."); }
-  });
+  }
 
   // ---------- Import ----------
   var impFile = $("importFile"), impData = null;
@@ -1799,7 +1808,7 @@ var BM = (function () {
   });
 
   // ---------- app version (set by scripts/bump-sw.sh on each release) ----------
-  var APP_VER = "1.8", APP_DATE = "11 Oct 2026";
+  var APP_VER = "1.9", APP_DATE = "11 Oct 2026";
   $("appVer").textContent = "v" + APP_VER + " · " + APP_DATE;
 
   // ---------- Light / dark ----------

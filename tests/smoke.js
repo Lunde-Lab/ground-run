@@ -121,8 +121,19 @@ const E2JOB = (() => {
   ok((await pg.$$('.humsw-dot')).length === 0 && !(await txt(pg, '#legend')).includes('HUMS weights'), 'No HUMS wts point without HUMS weights');
 
   // Save image: PNG of Runs + HUMS (Chromium has no file share -> download fallback)
-  const [dlImg] = await Promise.all([pg.waitForEvent('download'), pg.click('#saveImg')]);
-  ok(/^ground-run-engine1-.*\.png$/.test(dlImg.suggestedFilename()), 'Save image downloads PNG (' + dlImg.suggestedFilename() + ')');
+  await pg.evaluate(() => localStorage.removeItem('vibrasjonsdiagram-job'));
+  await pg.reload();
+  await pg.click('#saveImg');
+  ok(!(await pg.isHidden('#exModal')) && (await txt(pg, '#exTitle')) === 'Save image' && await pg.isHidden('#exDateRow'), 'Save image asks for tail number (no date field)');
+  await pg.click('#exGo');
+  ok((await txt(pg, '#exErr')).includes('three letters') && !(await pg.isHidden('#exModal')), 'Save image requires tail number');
+  await pg.fill('#exTail', 'abc');
+  const [dlImg] = await Promise.all([pg.waitForEvent('download'), pg.click('#exGo')]);
+  ok(/^ground-run-ABC-engine1-\d{4}-\d\d-\d\d-\d{4}\.png$/.test(dlImg.suggestedFilename()), 'Save image downloads PNG with tail + date/time (' + dlImg.suggestedFilename() + ')');
+  ok(JSON.parse(await pg.evaluate(() => localStorage.getItem('vibrasjonsdiagram-job'))).tail === 'ABC', 'Tail number remembered for next save/export');
+  await pg.click('#exportBtn');
+  ok((await txt(pg, '#exTitle')) === 'Export data' && !(await pg.isHidden('#exDateRow')) && (await pg.inputValue('#exTail')) === 'ABC', 'Export dialog still has date and prefilled tail');
+  await pg.click('#exCancel');
 
   // Above 4.0 IPS -> no suggestions
   await pg.evaluate(() => { const k = 'vibrasjonsdiagram-v4', o = JSON.parse(localStorage.getItem(k)); o.runs[0].ips = '4,5'; localStorage.setItem(k, JSON.stringify(o)); });

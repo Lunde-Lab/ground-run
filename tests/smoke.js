@@ -6,6 +6,17 @@ const URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fail++; };
 const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
+// Fixture: real Engine 2 job (HSS #2, data/jobs/2026-10_engine2_hss2.json) – the app has no built-in example.
+// '.' decimals so the app's cleanup of the old built-in example (',' strings) leaves it alone.
+const E2JOB = (() => {
+  const E = () => Array.from({ length: 12 }, () => []);
+  const run = (ips, deg, after) => { const pos = E(); after.forEach(([p, t]) => pos[p - 1].push(t)); return { ips, deg, pos }; };
+  return JSON.stringify({ target: 0.3, nW: 3, start: E(), runs: [
+    run('2.495', '153', [[4, 'Ti'], [7, 'Al'], [8, 'St']]), run('0.922', '295', [[2, 'Ti'], [6, 'St'], [9, 'Ti']]),
+    run('0.314', '279', [[4, 'Ti'], [7, 'Al'], [8, 'Al']]), run('0.982', '37', [[2, 'Al'], [4, 'Al'], [8, 'St']]),
+    run('0.338', '97', [[6, 'St'], [9, 'Al'], [12, 'Ti']]), run('0.329', '307', [[1, 'Al'], [6, 'Ti'], [8, 'Al']]),
+    run('0.140', '248', [])] });
+})();
 
 (async () => {
   const b = await chromium.launch();
@@ -14,8 +25,16 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.goto(URL);
   await pg.evaluate(() => { localStorage.clear(); localStorage.setItem('vibrasjonsdiagram-beta', '1'); localStorage.setItem('vibrasjonsdiagram-tab', '2'); });
   await pg.reload();
+  ok(await pg.evaluate(() => ['vibrasjonsdiagram-v4', 'vibrasjonsdiagram-v4-engine2'].every(k => !JSON.parse(localStorage.getItem(k)).runs.some(r => r.ips))) && !(await pg.$('#loadEx')),
+    'Fresh install: both engines empty, no Example button');
+  // Untouched example data from earlier app versions is cleared on load
+  await pg.evaluate(() => { const E = () => Array.from({ length: 12 }, () => []); localStorage.setItem('vibrasjonsdiagram-v4', JSON.stringify({ start: E(), runs: [['2,105', '60'], ['0,386', '235'], ['0,285', '322']].map(([ips, deg]) => ({ ips, deg, pos: E() })) })); });
+  await pg.reload();
+  ok(await pg.evaluate(() => !JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4')).runs.some(r => r.ips)), 'Old built-in Engine 1 example cleared from storage');
+  await pg.evaluate(j => localStorage.setItem('vibrasjonsdiagram-v4-engine2', j), E2JOB);
+  await pg.reload();
 
-  // Engine 2 example (fresh storage) = full HSS #2 job, last run within target
+  // Engine 2 job fixture = full HSS #2 job, last run within target
   const e2 = await pg.evaluate(() => JSON.parse(localStorage.getItem('vibrasjonsdiagram-v4-engine2')).runs.filter(r => r.ips).length);
   ok(e2 === 7, 'Engine 2 example has 7 runs');
   ok((await txt(pg, '#bOpt')).includes('Within target'), 'Engine 2 example shows "Within target"');
@@ -26,7 +45,7 @@ const txt = async (pg, s) => (await pg.textContent(s)).replace(/\s+/g, ' ');
   await pg.reload();
   const nx = (await txt(pg, '#legend')).match(/Next \(predicted\) ([\d.]+) IPS/);
   ok(nx && +nx[1] < 0.30, 'Engine 2 run 1–6: Next for HUMS setup below 0.30 (' + (nx && nx[1]) + ')');
-  await pg.evaluate(() => localStorage.removeItem('vibrasjonsdiagram-v4-engine2'));
+  await pg.evaluate(j => localStorage.setItem('vibrasjonsdiagram-v4-engine2', j), E2JOB);
   await pg.reload();
 
   // HUMS card outside Advanced: table + HUMS point in chart also with Advanced off

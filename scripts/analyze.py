@@ -195,9 +195,10 @@ def main():
             dM = min(0.3, max(0.1, 2 * math.sqrt(sum(x * x for x in dmag) / n)))
         else:
             dA, dM = DEFAULT_DANG, DEFAULT_DMAG
+        nr = sum(1 for j, _ in lst for r in j["runs"] if r["use"])
         prior[str(e)] = {"mag": round(abs(a), 2), "ang": round(math.degrees(cmath.phase(a)), 1),
-                         "jobs": n, "dAng": round(dA), "dMag": round(dM, 2)}
-        print(f"Engine {e}: alpha {fmt(a)} from {n} job(s), range ±{dA:.0f}° / ±{dM * 100:.0f}%")
+                         "jobs": n, "runs": nr, "dAng": round(dA), "dMag": round(dM, 2)}
+        print(f"Engine {e}: alpha {fmt(a)} from {n} job(s), {nr} runs, range ±{dA:.0f}° / ±{dM * 100:.0f}%")
         for j, aj in lst:
             print(f"   {j['file']}: {fmt(aj)}  (Δ angle {math.degrees(cmath.phase(aj / a)):+.0f}°)")
         if n >= 2:   # leave-one-job-out: how well would the others have predicted this job's first step?

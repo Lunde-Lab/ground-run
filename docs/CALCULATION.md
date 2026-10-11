@@ -58,6 +58,7 @@ With only one run there is no fit. The tool then uses `PRIOR[engine]` (in `index
 - Prediction: `V_1 + α_prior · (W' − W_1)`.
 - Each suggestion shows a **range**: worst/best prediction with α rotated ±`dAng` and scaled ±`dMag`. The same range is drawn as the shaded zone around "Next ≈" in the chart (only when weights have been entered).
 - From run 2 the job's own fit takes over automatically.
+- The Beta card shows how much data is behind the suggestions: `PRIOR[engine].jobs` / `.runs` (used runs in earlier jobs) + runs in the current job.
 
 ### Estimating α from a job (difference method)
 

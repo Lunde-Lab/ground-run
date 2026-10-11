@@ -99,6 +99,10 @@ const E2JOB = (() => {
   ok(/Range \d\.\d\d–\d\.\d\d/.test(opt), 'Suggestions show a range');
   ok(/^Data · Engine 1: \d+ earlier jobs? \(\d+ runs\) \+ this job \(1 run\)$/.test(await txt(pg, '#bData')), 'Beta shows how much data the suggestions use');
   ok((await pg.$$eval('#bOpt .srow .sips', els => els.every(e => /\d+°/.test(e.textContent)))), 'Every suggestion row shows predicted/measured degrees');
+  ok(JSON.stringify(await pg.$$eval('.pern button', bs => bs.map(b => +b.dataset.n))) === '[1,2,3,4]', 'Screw-count picker shows 1–4 screws');
+  await pg.click('.pern button[data-n="4"]');
+  ok((await pg.$$('#bOpt .srow.best .chip2')).length === 4, 'Choosing 4 screws lists 4-screw setups');
+  await pg.click('.pern button[data-n="2"]');
   ok(/Recommended: \d screws?|None below 0\.30/.test(opt) && !opt.includes('fewest') && !(await pg.$('.pern button.rec')), 'Recommendation as one line, recommended button styled like the others');
 
   // HUMS rec. weights on last run -> 'HUMS suggestion' row in Suggestions, Apply copies them to the run's weights

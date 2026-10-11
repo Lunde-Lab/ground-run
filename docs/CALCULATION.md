@@ -87,10 +87,10 @@ and compares, leave-one-job-out on the same steps: HUMS as-is, prior α, and cal
 
 | Engine | Jobs | α | Note |
 |---|---|---|---|
-| 1 | 1 (3 runs) | 0.99 ∠ −171° | Matches technicians' rule "weight at the dot" (α ≈ 1 ∠ 180°) |
+| 1 | 2 (3 + 2 runs) | 0.99 ∠ −171° | Matches technicians' rule "weight at the dot" (α ≈ 1 ∠ 180°). 2026-10-10 job: one tiny step (Al↔Ti swap, \|ΔW\| 0.13) → angle −167° agrees, magnitude 2.8 is noise; barely moves the pooled α |
 | 2 | 1 (7 runs, 5–6 excluded) | 1.00 ∠ −115° | ≈ 2 clock hours counter-clockwise from the dot |
 
-No HUMS predictions in the job data yet.
+HUMS: one prediction so far (engine 1, 2026-10-10): error 0.13 IPS, c = 1.02 ∠ −20°. `use` stays false until ≥ 3 jobs.
 
 The −4 h "sensor offset" for engine 2 from the original spec does **not** match the data (it predicts engine 1 at ≈ +9°); `res.alphaCorr` is computed but unused.
 

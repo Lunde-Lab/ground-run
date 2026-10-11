@@ -2,9 +2,15 @@
   "1": {
     "mag": 0.99,
     "ang": -171.1,
-    "jobs": 1,
+    "jobs": 2,
     "dAng": 30,
-    "dMag": 0.15
+    "dMag": 0.15,
+    "hums": {
+      "cMag": 1.019,
+      "cAng": -20.0,
+      "jobs": 1,
+      "use": false
+    }
   },
   "2": {
     "mag": 1.0,

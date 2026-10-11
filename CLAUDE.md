@@ -19,7 +19,7 @@ Live: https://lunde-lab.github.io/ground-run/ (GitHub Pages from `main`, root). 
 | Path | What |
 |---|---|
 | `index.html` | The whole app: HTML + CSS + JS inline. **Source of truth – edit directly.** |
-| `sw.js`, `manifest.webmanifest`, `icons/` | Offline/PWA. On each release run `scripts/bump-sw.sh`: bumps `VERSION` in `sw.js` and the app version `APP_VER` (1.N → 1.N+1) + `APP_DATE` shown at the bottom of the app |
+| `sw.js`, `manifest.webmanifest`, `icons/` | Offline/PWA. Run `scripts/bump-sw.sh` on each release: bumps `VERSION` in `sw.js` and the app version/date in `index.html` (`v1.N · d Mon YYYY` at the bottom, same as the fcp app) |
 | `docs/CALCULATION.md` | How the balance math works. Keep in sync with code changes. |
 | `data/jobs/*.json` | Real completed jobs (see `data/README.md`). |
 | `scripts/analyze.py` | Estimates α per engine from the jobs; `--write` updates the `PRIOR` block in `index.html` and `data/priors.json`. |

@@ -139,7 +139,7 @@ const E2JOB = (() => {
   fs.unlinkSync(tmp);
 
   // Version line + theme icon button in the top bar
-  ok(/^Ground Run v\d+\.\d+ · \d{4}-\d\d-\d\d$/.test(await txt(pg, '#appVer')), 'App version and date shown');
+  ok(/^v1\.\d+ · \d{1,2} \w{3} \d{4}$/.test(await pg.textContent('#appVer')), 'App version and date shown');
   const th0 = await pg.evaluate(() => document.documentElement.getAttribute('data-theme') || ''), lb0 = await pg.getAttribute('#themeBtn', 'aria-label');
   await pg.click('#themeBtn');
   const th1 = await pg.evaluate(() => document.documentElement.getAttribute('data-theme'));

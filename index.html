@@ -300,6 +300,11 @@ tr.plan td.pv small { display: block; font-size: .65rem; font-weight: 500; color
 .export button { min-height: 48px; padding: 10px 22px; }
 .export .btns { justify-content: center; }
 .export .btns.sub { margin-top: 10px; }
+/* Import/Export som én gruppe */
+.iogrp { display: flex; flex: 1 1 auto; }
+.iogrp button { flex: 1 1 auto; }
+.iogrp button:first-child { border-radius: 10px 0 0 10px; }
+.iogrp button + button { border-radius: 0 10px 10px 0; border-left: 0; }
 .export button.small { flex: 0 0 auto; min-height: 44px; padding: 6px 16px; font-size: .85rem; opacity: .8; }
 .exf { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 .exf input { -webkit-appearance: none; appearance: none; display: block; width: 100%; box-sizing: border-box; font: inherit; font-size: 1.1rem; letter-spacing: 0; color: var(--fg); min-height: 50px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); text-align: left; }
@@ -541,7 +546,7 @@ table.btab { min-width: 0; table-layout: fixed; }
   </div>
 
   <div class="export">
-    <div class="btns"><button type="button" id="newJob">New job</button><button type="button" id="exportBtn">Export data (JSON)</button><button type="button" id="saveImg">Save image</button><button type="button" id="importBtn">Import data (JSON)</button></div>
+    <div class="btns"><button type="button" id="newJob">New job</button><button type="button" id="saveImg">Save image</button><div class="iogrp" role="group" aria-label="Data file"><button type="button" id="importBtn">Import</button><button type="button" id="exportBtn">Export</button></div></div>
     <div class="btns sub"><button type="button" id="loadEx" class="small">Example</button></div>
     <input type="file" id="importFile" accept=".json,application/json" hidden>
     <p class="fine2" id="exportMsg" hidden></p>
@@ -754,7 +759,8 @@ var BM = (function () {
   // Engine 1 bruker eksisterende lagring, Engine 2 har egen
   var KEYS = { 1: KEY, 2: KEY + "-engine2" }, ENG = 1;
   try { var te = +localStorage.getItem("vibrasjonsdiagram-tab"); if (te === 1 || te === 2) ENG = te; } catch (e) {}
-  function blank() { var o = { target: 0.3, nW: 3, start: emptyPos(), runs: [] }; for (var k = 0; k < 5; k++) o.runs.push(newRun()); return o; }
+  var NEWRUNS = 3;   // empty runs in a new job (all tabs)
+  function blank() { var o = { target: 0.3, nW: 3, start: emptyPos(), runs: [] }; for (var k = 0; k < NEWRUNS; k++) o.runs.push(newRun()); return o; }
   function tidy(o) {
     delete o.plan;
     if (!Array.isArray(o.start)) o.start = emptyPos();
@@ -1475,7 +1481,7 @@ var BM = (function () {
   var BLADES = [["Blue", "var(--b-blue)"], ["Red", "var(--b-red)"], ["Black", "var(--b-black)"], ["Yellow", "var(--b-yellow)"]];
   var LIM = { roll: 0.20, vert: 0.20, lat: 0.25, split: 20 };
   function newAdj() { var a = { w: {}, pcr: {}, roll: "", lat: "", vert: "", split: "" }; BLADES.forEach(function (b) { a.w[b[0]] = ""; a.pcr[b[0]] = ""; }); return a; }
-  function blankMR() { var m = { ac: "LN-O", date: "", sign: "", adj: [] }; for (var k = 0; k < 5; k++) m.adj.push(newAdj()); return m; }
+  function blankMR() { var m = { ac: "LN-O", date: "", sign: "", adj: [] }; for (var k = 0; k < NEWRUNS; k++) m.adj.push(newAdj()); return m; }
   var M = null;
   try { var mm = JSON.parse(localStorage.getItem(MRKEY)); if (mm && Array.isArray(mm.adj)) M = mm; } catch (e) {}
   if (!M) M = blankMR();
@@ -1571,7 +1577,7 @@ var BM = (function () {
   // ---------- Tail Rotor Balance ----------
   var TRKEY = "vibrasjonsdiagram-trbal", TRLIM = 0.20, TRWMAX = 300, TRB = [1, 2, 3, 4];
   function newTr() { var a = { inst: {}, rec: {}, ips: "" }; TRB.forEach(function (b) { a.inst[b] = ""; a.rec[b] = ""; }); return a; }
-  function blankTR() { var t = { adj: [] }; for (var k = 0; k < 5; k++) t.adj.push(newTr()); return t; }
+  function blankTR() { var t = { adj: [] }; for (var k = 0; k < NEWRUNS; k++) t.adj.push(newTr()); return t; }
   var T = null;
   try { var tt = JSON.parse(localStorage.getItem(TRKEY)); if (tt && Array.isArray(tt.adj)) T = tt; } catch (e) {}
   if (!T) T = blankTR();
@@ -1805,7 +1811,7 @@ var BM = (function () {
   });
 
   // ---------- App version (set by scripts/bump-sw.sh on each release) ----------
-  var APP_VER = "1.1", APP_DATE = "2026-10-11";
+  var APP_VER = "1.2", APP_DATE = "2026-10-11";
   $("appVer").textContent = "Ground Run v" + APP_VER + " · " + APP_DATE;
 
   // ---------- Light / dark ----------

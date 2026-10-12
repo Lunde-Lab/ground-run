@@ -88,10 +88,10 @@ and compares, leave-one-job-out on the same steps: HUMS as-is, prior α, and cal
 
 | Engine | Jobs | α | Note |
 |---|---|---|---|
-| 1 | 2 (3 + 2 runs) | 0.99 ∠ −171° | Matches technicians' rule "weight at the dot" (α ≈ 1 ∠ 180°). 2026-10-10 job: one tiny step (Al↔Ti swap, \|ΔW\| 0.13) → angle −167° agrees, magnitude 2.8 is noise; barely moves the pooled α |
-| 2 | 1 (7 runs, 5–6 excluded) | 1.00 ∠ −115° | ≈ 2 clock hours counter-clockwise from the dot |
+| 1 | 3 (7 runs) | 0.92 ∠ −173° (range ±15° / ±30 %) | Matches technicians' rule "weight at the dot" (α ≈ 1 ∠ 180°). Jobs: 0.99∠−171°, 2.83∠−167° (2026-10-10: one tiny Al↔Ti step, \|ΔW\| 0.13 – magnitude is noise, angle agrees), 0.67∠179°. The ±30 % magnitude range comes mostly from the 2026-10-10 job |
+| 2 | 2 (8 runs) | 0.94 ∠ −119° (range ±30° / ±15 %, default until 3 jobs) | HSS #2: 1.00∠−115°. 2026-10-12: 0.77∠−154° – 39° off, but both steps agree (−154°, −157°, errors < 0.05 IPS), so α likely varies between aircraft. Pooled α is dominated by the big HSS #2 steps |
 
-HUMS: one prediction so far (engine 1, 2026-10-10): error 0.13 IPS, c = 1.02 ∠ −20°. `use` stays false until ≥ 3 jobs.
+HUMS: engine 1 – 2 predictions (2026-10-10, 2026-10-12), RMS error 0.20 IPS, c = 0.81 ∠ −8°, α_HUMS differs 22° between the jobs. Engine 2 – 1 prediction (2026-10-12), error 0.21 IPS, c = 1.04 ∠ −28°. `use` stays false until ≥ 3 jobs with HUMS data.
 
 The −4 h "sensor offset" for engine 2 from the original spec does **not** match the data (it predicts engine 1 at ≈ +9°); `res.alphaCorr` is computed but unused.
 

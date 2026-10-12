@@ -1,24 +1,30 @@
 {
   "1": {
-    "mag": 0.99,
-    "ang": -171.1,
-    "jobs": 2,
-    "runs": 5,
-    "dAng": 30,
-    "dMag": 0.15,
+    "mag": 0.92,
+    "ang": -172.6,
+    "jobs": 3,
+    "runs": 7,
+    "dAng": 15,
+    "dMag": 0.3,
     "hums": {
-      "cMag": 1.019,
-      "cAng": -20.0,
-      "jobs": 1,
+      "cMag": 0.814,
+      "cAng": -7.8,
+      "jobs": 2,
       "use": false
     }
   },
   "2": {
-    "mag": 1.0,
-    "ang": -115.3,
-    "jobs": 1,
-    "runs": 5,
+    "mag": 0.94,
+    "ang": -119.4,
+    "jobs": 2,
+    "runs": 8,
     "dAng": 30,
-    "dMag": 0.15
+    "dMag": 0.15,
+    "hums": {
+      "cMag": 1.039,
+      "cAng": -28.4,
+      "jobs": 1,
+      "use": false
+    }
   }
 }

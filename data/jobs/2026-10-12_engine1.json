@@ -1,0 +1,10 @@
+{
+  "engine": 1,
+  "date": "2026-10-12",
+  "note": "App export. Fitted the HUMS recommended weights after run 1. Run 2 within target.",
+  "start": [],
+  "runs": [
+    { "ips": 1.096, "deg": 60, "after": ["1 St", "6 Al", "9 Al"], "hums": [0.006, 163] },
+    { "ips": 0.245, "deg": 39, "after": [], "note": "within target" }
+  ]
+}

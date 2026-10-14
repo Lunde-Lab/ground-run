@@ -38,7 +38,7 @@ Live: https://lunde-lab.github.io/ground-run/ (GitHub Pages from `main`, root). 
 - Screws: Al 0.96 / Ti 1.58 / St 2.54 IPS – always shown in **IPS** (not grams). Max one per position.
 - Runs table: weights in row *k* are fitted **after** run *k*; row 0 = start weights.
 - HSS limits: target < 0.30, limit 0.50, index output shaft > 4.0 IPS (AMM 18-12-02).
-- MR Balance: weight in oz, PCR in notches; limits roll 0.20, vertical 0.20, lateral 0.25 IPS, split 20. TR Balance: 0.20 IPS, max weight 300 g. Split / Recorded IPS cells are split in *Predicted* (top) / *Recorded* (bottom).
+- MR Balance: weight in oz, PCR in notches; fields in order Vertical, Roll, Lateral, Split; limits roll 0.20, lateral 0.25 IPS, split 20, vertical has no limit. TR Balance: 0.20 IPS, max weight 300 g. Split / Recorded IPS cells are split in *Predicted* (top) / *Recorded* (bottom).
 - Engine 1 and 2 have **different α** (≈ 1∠−171° vs 1∠−115°). Engine 1 matches the hand rule "weight at the dot".
 
 ## Behaviour André has decided (don't undo without asking)
@@ -50,6 +50,7 @@ Live: https://lunde-lab.github.io/ground-run/ (GitHub Pages from `main`, root). 
 - IPS keypad: digits without decimal point, `1041` → `1.041`.
 - "New job" asks for tail number (3 letters, required) + date, then clears all tabs (3 empty runs each). Tail is shown in the top bar (tap to change). Export / Save image use it directly; they only ask if it is missing. Fresh install starts empty.
 - "Save image" (engine tabs): draws a PNG with tail + date/time of Runs + HUMS on a canvas (no libraries) and opens the iPad share sheet (Save Image); falls back to download.
+- Top bar (tabs + tail + theme) is sticky – always visible when scrolling. Active tab is a solid accent fill.
 
 ## Adding job data (improves run-1 suggestions)
 

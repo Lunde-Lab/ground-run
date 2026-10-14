@@ -100,5 +100,5 @@ The −4 h "sensor offset" for engine 2 from the original spec does **not** matc
 | Where | Limit |
 |---|---|
 | HSS | Target < 0.30 IPS, limit 0.50 IPS, index output shaft > 4.0 IPS |
-| MR Balance | Roll 0.20, Vertical 0.20, Lateral 0.25 IPS, Split 20 |
+| MR Balance | Vertical (no limit), Roll 0.20, Lateral 0.25 IPS, Split 20 |
 | TR Balance | 0.20 IPS, max weight 300 g |

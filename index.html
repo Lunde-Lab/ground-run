@@ -92,7 +92,8 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); pad
 .res .cell small { font-size: .75rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
 .mr-btns { justify-content: flex-end; }
 /* Fanene fyller bredden uten scroll, tilpasset iPad mini (768 × 1024) */
-.topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: end; gap: 4px; border-bottom: 1px solid var(--line); }
+/* Alltid synlig ved scrolling; safe-area for status-bar (black-translucent) */
+.topbar { position: -webkit-sticky; position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: end; gap: 4px; margin: -22px -16px 0; padding: max(8px, env(safe-area-inset-top, 0px)) 16px 0; background: var(--bg); border-bottom: 2px solid var(--accent); box-shadow: 0 6px 12px -8px rgba(0,0,0,.35); }
 .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; overflow: hidden; }
 .themebtn { width: 48px; min-height: 48px; margin-bottom: 4px; padding: 0; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; color: var(--muted); -webkit-tap-highlight-color: transparent; }
 .themebtn:hover { color: var(--fg); }
@@ -103,7 +104,8 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); pad
 @media (max-width: 480px) { .topbar, .tabs { gap: 2px; } .tabs button { font-size: .74rem; padding-inline: 2px; } .themebtn { width: 44px; } .jobbtn { min-width: 44px; padding: 0 4px; font-size: .78rem; letter-spacing: 0; } .tabs { grid-template-columns: repeat(4, minmax(0, auto)); } .topbar .tabs button { font-size: .72rem; padding-inline: 1px; } }
 .tabs button { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(.78rem, 3.1vw, 1.4rem); font-weight: 700; letter-spacing: -.01em; min-height: 56px; padding: 8px 4px; border: 0; border-radius: 10px 10px 0 0; background: transparent; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
 .tabs button:hover { color: var(--fg); }
-.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); background: rgba(var(--accent-rgb), 0.08); }
+.tabs button[aria-selected="true"] { color: var(--bg); font-weight: 800; border-bottom-color: var(--accent); background: var(--accent); }
+.tabs button[aria-selected="true"]:hover { color: var(--bg); }
 h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
 .sub { color: var(--muted); font-size: .95rem; margin: 0; }
 #engView { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
@@ -1471,7 +1473,7 @@ var BM = (function () {
   // ---------- MR Ground Track & Balance ----------
   var MRKEY = "vibrasjonsdiagram-mrtb";
   var BLADES = [["Blue", "var(--b-blue)"], ["Red", "var(--b-red)"], ["Black", "var(--b-black)"], ["Yellow", "var(--b-yellow)"]];
-  var LIM = { roll: 0.20, vert: 0.20, lat: 0.25, split: 20 };
+  var LIM = { roll: 0.20, vert: null, lat: 0.25, split: 20 };
   function newAdj() { var a = { w: {}, pcr: {}, roll: "", lat: "", vert: "", split: "" }; BLADES.forEach(function (b) { a.w[b[0]] = ""; a.pcr[b[0]] = ""; }); return a; }
   function blankMR() { var m = { ac: "LN-O", date: "", sign: "", adj: [] }; for (var k = 0; k < NEWRUNS; k++) m.adj.push(newAdj()); return m; }
   var M = null;
@@ -1532,10 +1534,10 @@ var BM = (function () {
       });
       tb.appendChild(tbody); bd.appendChild(tb);
       var res = document.createElement("div"); res.className = "res";
-      [["roll", "Roll IPS", "ips", "IPS"], ["vert", "Vertical IPS", "ips", "IPS"], ["lat", "Lateral IPS", "ips", "IPS"], ["split", "Split", "num", "mm"]].forEach(function (f) {
+      [["vert", "Vertical IPS", "ips", "IPS"], ["roll", "Roll IPS", "ips", "IPS"], ["lat", "Lateral IPS", "ips", "IPS"], ["split", "Split", "num", "mm"]].forEach(function (f) {
         var box = document.createElement("div"), lb = document.createElement("div");
         lb.className = "rl"; lb.textContent = f[1];
-        if (LIM[f[0]] != null) { var lm = document.createElement("span"); lm.className = "lim"; lm.textContent = "Limit " + (f[0] === "split" ? LIM.split + " mm" : fmt(LIM[f[0]], 2)); lb.appendChild(lm); }
+        var lm = document.createElement("span"); lm.className = "lim"; lm.textContent = LIM[f[0]] == null ? "No limit" : "Limit " + (f[0] === "split" ? LIM.split + " mm" : fmt(LIM[f[0]], 2)); lb.appendChild(lm);
         box.appendChild(lb);
         if (f[0] === "split") {
           box.className = "split2";
@@ -1833,7 +1835,7 @@ var BM = (function () {
   });
 
   // ---------- app version (set by scripts/bump-sw.sh on each release) ----------
-  var APP_VER = "1.11", APP_DATE = "12 Oct 2026";
+  var APP_VER = "1.12", APP_DATE = "14 Oct 2026";
   $("appVer").textContent = "v" + APP_VER + " · " + APP_DATE;
 
   // ---------- Light / dark ----------
